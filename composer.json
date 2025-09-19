@@ -1,0 +1,28 @@
+{
+  "name": "rezaqsr/wp2laravel",
+  "description": "WordPress helper functions and utilities for Laravel (wp2laravel).",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Rezaqsr\\Wp2Laravel\\": "src/"
+    },
+    "files": [
+      "src/helpers.php"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Rezaqsr\\Wp2Laravel\\Providers\\Wp2LaravelServiceProvider"
+      ],
+      "aliases": {
+        "Wp2Laravel": "Rezaqsr\\Wp2Laravel\\Facades\\Wp2Laravel"
+      }
+    }
+  },
+  "require": {
+    "php": ">=8.2",
+    "illuminate/support": "^8 || ^9 || ^10"
+  }
+}

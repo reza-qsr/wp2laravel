@@ -1,6 +1,6 @@
 <?php
 
-namespace Rezaqsr\Wp2Laravel\Contracts;
+namespace RezaQsr\Wp2Laravel\Contracts;
 
 interface OptionRepositoryInterface
 {

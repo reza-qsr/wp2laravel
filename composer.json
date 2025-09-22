@@ -5,7 +5,7 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "Rezaqsr\\Wp2Laravel\\": "src/"
+      "RezaQsr\\Wp2Laravel\\": "src/"
     },
     "files": [
       "src/helpers.php"
@@ -14,10 +14,10 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Rezaqsr\\Wp2Laravel\\Providers\\Wp2LaravelServiceProvider"
+        "RezaQsr\\Wp2Laravel\\Providers\\Wp2LaravelServiceProvider"
       ],
       "aliases": {
-        "Wp2Laravel": "Rezaqsr\\Wp2Laravel\\Facades\\Wp2Laravel"
+        "Wp2Laravel": "RezaQsr\\Wp2Laravel\\Facades\\Wp2Laravel"
       }
     }
   },

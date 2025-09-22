@@ -20,9 +20,5 @@
         "Wp2Laravel": "RezaQsr\\Wp2Laravel\\Facades\\Wp2Laravel"
       }
     }
-  },
-  "require": {
-    "php": ">=8.2",
-    "illuminate/support": "^8 || ^9 || ^10"
   }
 }

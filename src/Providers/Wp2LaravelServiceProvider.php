@@ -13,29 +13,22 @@ class Wp2LaravelServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        // merge config defaults from package to app config
+
         $this->mergeConfigFrom(__DIR__ . '/../../config/wp2laravel.php', 'wp2laravel');
-
-        // bind interface to DB implementation
-        $this->app->bind(OptionRepositoryInterface::class, function($app) {
-            return new DbOptionRepository();
-        });
-
+        $this->app->bind(OptionRepositoryInterface::class, DbOptionRepository::class);
         $this->app->singleton(OptionService::class, function($app) {
             return new OptionService($app->make(OptionRepositoryInterface::class));
         });
 
-        $this->app->singleton(Wp2LaravelManager::class, function($app) {
+        $this->app->singleton('wp2laravel', function($app) {
             return new Wp2LaravelManager($app->make(OptionService::class));
         });
 
-        // use Wp2Laravel
-        AliasLoader::getInstance()->alias('Wp2Laravel', \RezaQsr\Wp2Laravel\Facades\Wp2Laravel::class); // تعریف alias
+        AliasLoader::getInstance()->alias('Wp2Laravel', \RezaQsr\Wp2Laravel\Facades\Wp2Laravel::class);
     }
 
     public function boot()
     {
-
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../../config/wp2laravel.php' => config_path('wp2laravel.php'),

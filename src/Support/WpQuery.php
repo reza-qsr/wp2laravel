@@ -28,6 +28,9 @@ class WpQuery
             $this->query->where('post_status', $this->args['post_status']);
         }
 
+        if (!empty($args['s'])) {
+            $this->query->where('post_title', 'like', '%' . $args['s'] . '%');
+        }
 
         if (!empty($this->args['tax_query'])) {
             $this->applyTaxQuery($this->args['tax_query']);

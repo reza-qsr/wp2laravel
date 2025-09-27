@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class PostMeta extends Model
 {
+    protected $primaryKey = 'meta_id';
     protected $table;
     protected $guarded = [];
+    public $timestamps = false;
 
     public function __construct(array $attributes = [])
     {
@@ -17,6 +19,6 @@ class PostMeta extends Model
 
     public function post()
     {
-        return $this->belongsTo(Post::class, 'post_id');
+        return $this->belongsTo(Post::class, 'post_id', 'ID');
     }
 }

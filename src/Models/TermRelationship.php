@@ -8,6 +8,8 @@ class TermRelationship extends Model
 {
     protected $table;
     protected $guarded = [];
+    public $timestamps = false;
+    public $incrementing = false;
 
     public function __construct(array $attributes = [])
     {

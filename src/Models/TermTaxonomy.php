@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class TermTaxonomy extends Model
 {
+    protected $primaryKey = 'term_taxonomy_id';
     protected $table;
     protected $guarded = [];
+    public $timestamps = false;
 
     public function __construct(array $attributes = [])
     {
@@ -17,6 +19,6 @@ class TermTaxonomy extends Model
 
     public function term()
     {
-        return $this->belongsTo(Term::class, 'term_id');
+        return $this->belongsTo(Term::class, 'term_id', 'term_id');
     }
 }

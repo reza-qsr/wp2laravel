@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
+    protected $primaryKey = 'ID';
     protected $table;
     protected $guarded = [];
+    public $timestamps = false;
 
 
     public function __construct(array $attributes = [])
@@ -18,16 +20,16 @@ class Post extends Model
 
     public function metas()
     {
-        return $this->hasMany(PostMeta::class, 'post_id');
+        return $this->hasMany(PostMeta::class, 'post_id', $this->primaryKey);
     }
 
-    public function terms()
+    public function termTaxonomies()
     {
         return $this->belongsToMany(
-            Term::class,
-            config('wp2laravel.term_relationships'),
+            TermTaxonomy::class,
+            config('wp2laravel.term_relationships_table', 'wp_term_relationships'),
             'object_id',
             'term_taxonomy_id'
-        )->withPivot('term_taxonomy_id');
+        );
     }
 }

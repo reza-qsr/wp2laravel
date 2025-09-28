@@ -51,7 +51,88 @@ class DbPostRepository implements PostRepositoryInterface
             $q->offset((int) $args['offset']);
         }
 
+        if (!empty($args['meta_query']) && is_array($args['meta_query'])) {
+            $metaQuery = $args['meta_query'];
+            $relation = strtoupper($metaQuery['relation'] ?? 'AND');
 
+            if ($relation === 'OR') {
+                $q->whereHas('metas', function (Builder $mq) use ($metaQuery) {
+                    $conds = array_filter($metaQuery, function ($k) {
+                        return $k !== 'relation';
+                    }, ARRAY_FILTER_USE_KEY);
+                    $mq->where(function (Builder $inner) use ($conds) {
+                        $first = true;
+                        foreach ($conds as $cond) {
+                            $key = $cond['key'] ?? null;
+                            $value = $cond['value'] ?? null;
+                            $compare = strtoupper($cond['compare'] ?? '=');
+                            if ($first) {
+                                $this->applyMetaCondition($inner, $key, $compare, $value, false);
+                                $first = false;
+                            } else {
+                                $this->applyMetaCondition($inner, $key, $compare, $value, true);
+                            }
+                        }
+                    });
+                });
+            } else {
+                foreach ($metaQuery as $cond) {
+                    if ($cond === 'relation') continue;
+                    $key = $cond['key'] ?? null;
+                    $value = $cond['value'] ?? null;
+                    $compare = strtoupper($cond['compare'] ?? '=');
+                    $q->whereHas('metas', function (Builder $mq) use ($key, $compare, $value) {
+                        $this->applyMetaCondition($mq, $key, $compare, $value, false);
+                    });
+                }
+            }
+        }
+
+        if (!empty($args['tax_query']) && is_array($args['tax_query'])) {
+            $taxQuery = $args['tax_query'];
+            $relation = strtoupper($taxQuery['relation'] ?? 'AND');
+            $conds = array_filter($taxQuery, function ($k) {
+                return $k !== 'relation';
+            }, ARRAY_FILTER_USE_KEY);
+
+            if ($relation === 'OR') {
+                $q->whereHas('termTaxonomies', function (Builder $tq) use ($conds) {
+                    $first = true;
+                    foreach ($conds as $cond) {
+                        $taxonomy = $cond['taxonomy'] ?? null;
+                        $terms = (array) ($cond['terms'] ?? []);
+                        $field = $cond['field'] ?? 'term_id'; // پیش‌فرض مثل وردپرس term_id
+
+                        $callback = function (Builder $inner) use ($taxonomy, $terms, $field) {
+                            $inner->where('taxonomy', $taxonomy)
+                                ->whereHas('term', function (Builder $qt) use ($terms, $field) {
+                                    $qt->whereIn($field, $terms);
+                                });
+                        };
+
+                        if ($first) {
+                            $tq->where($callback);
+                            $first = false;
+                        } else {
+                            $tq->orWhere($callback);
+                        }
+                    }
+                });
+            } else {
+                foreach ($conds as $cond) {
+                    $taxonomy = $cond['taxonomy'] ?? null;
+                    $terms = (array) ($cond['terms'] ?? []);
+                    $field = $cond['field'] ?? 'term_id';
+
+                    $q->whereHas('termTaxonomies', function (Builder $tq) use ($taxonomy, $terms, $field) {
+                        $tq->where('taxonomy', $taxonomy)
+                            ->whereHas('term', function (Builder $qt) use ($terms, $field) {
+                                $qt->whereIn($field, $terms);
+                            });
+                    });
+                }
+            }
+        }
 
 
         return $q->get();
@@ -133,5 +214,43 @@ class DbPostRepository implements PostRepositoryInterface
         }
         return $maybe;
     }
+    protected function applyMetaCondition(Builder $mq, $key, $compare, $value, $useOr = false)
+    {
+        $method = $useOr ? 'orWhere' : 'where';
 
+        switch ($compare) {
+            case 'IN':
+                $mq->{$method}('meta_key', $key);
+                $mq->{$method . 'In'}('meta_value', (array) $value);
+                $mq->where('meta_key', $key)->whereIn('meta_value', (array) $value);
+                break;
+
+            case 'LIKE':
+                if ($useOr) {
+                    $mq->orWhere(function (Builder $q) use ($key, $value) {
+                        $q->where('meta_key', $key)
+                            ->where('meta_value', 'LIKE', "%{$value}%");
+                    });
+                } else {
+                    $mq->where(function (Builder $q) use ($key, $value) {
+                        $q->where('meta_key', $key)
+                            ->where('meta_value', 'LIKE', "%{$value}%");
+                    });
+                }
+                break;
+
+            default:
+                if ($useOr) {
+                    $mq->orWhere(function (Builder $q) use ($key, $compare, $value) {
+                        $q->where('meta_key', $key)
+                            ->where('meta_value', $compare, $value);
+                    });
+                } else {
+                    $mq->where(function (Builder $q) use ($key, $compare, $value) {
+                        $q->where('meta_key', $key)
+                            ->where('meta_value', $compare, $value);
+                    });
+                }
+        }
+    }
 }

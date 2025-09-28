@@ -7,7 +7,6 @@ use RezaQsr\Wp2Laravel\Models\Option;
 
 class DbOptionRepository implements OptionRepositoryInterface
 {
-    // خواندن option
     public function get(string $key, $default = null)
     {
         $option = Option::where('option_name', $key)->first();

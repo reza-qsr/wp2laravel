@@ -3,6 +3,7 @@
 namespace RezaQsr\Wp2Laravel\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Term extends Model
 {

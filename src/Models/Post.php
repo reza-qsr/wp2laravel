@@ -3,6 +3,7 @@
 namespace RezaQsr\Wp2Laravel\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Post extends Model
 {
@@ -16,6 +17,20 @@ class Post extends Model
     {
         parent::__construct($attributes);
         $this->table = config('wp2laravel.posts_table', 'wp_posts');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function (Post $post) {
+            $slug = $post->post_name ?: Str::slug($post->post_title);
+
+            $baseSlug = $slug;
+            $i = 2;
+            while (Post::where('post_name', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $i++;
+            }
+            $post->post_name = $slug;
+        });
     }
 
     public function metas()

@@ -38,28 +38,28 @@ class DbPostRepositoryTest extends TestCase
         $this->assertEquals('Hello', $found->post_title);
     }
 
-//    public function test_meta_crud_and_meta_query()
-//    {
-//        $p1 = $this->repo->insert(['post_title' => 'A', 'post_type'=>'post', 'post_status'=>'publish']);
-//        $p2 = $this->repo->insert(['post_title' => 'B', 'post_type'=>'post', 'post_status'=>'publish']);
-//
-//        $this->repo->updateMeta($p1->ID, 'color', 'red');
-//        $this->repo->updateMeta($p2->ID, 'color', 'blue');
-//
-//        $this->assertEquals('red', $this->repo->getMeta($p1->ID, 'color'));
-//        $this->assertEquals('blue', $this->repo->getMeta($p2->ID, 'color'));
-//
-//
-//        $results = $this->repo->query([
-//            'post_type' => 'post',
-//            'meta_query' => [
-//                ['key' => 'color', 'value' => 'red', 'compare' => '=']
-//            ]
-//        ]);
-//
-//        $this->assertCount(1, $results);
-//        $this->assertEquals('A', $results->first()->post_title);
-//    }
+    public function test_meta_crud_and_meta_query()
+    {
+        $p1 = $this->repo->insert(['post_title' => 'A', 'post_type'=>'post', 'post_status'=>'publish']);
+        $p2 = $this->repo->insert(['post_title' => 'B', 'post_type'=>'post', 'post_status'=>'publish']);
+
+        $this->repo->updateMeta($p1->ID, 'color', 'red');
+        $this->repo->updateMeta($p2->ID, 'color', 'blue');
+
+        $this->assertEquals('red', $this->repo->getMeta($p1->ID, 'color'));
+        $this->assertEquals('blue', $this->repo->getMeta($p2->ID, 'color'));
+
+
+        $results = $this->repo->query([
+            'post_type' => 'post',
+            'meta_query' => [
+                ['key' => 'color', 'value' => 'red', 'compare' => '=']
+            ]
+        ]);
+
+        $this->assertCount(1, $results);
+        $this->assertEquals('A', $results->first()->post_title);
+    }
 
     public function test_tax_query_by_slug()
     {

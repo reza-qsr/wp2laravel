@@ -140,10 +140,34 @@ class DbPostRepository implements PostRepositoryInterface
 
     public function insert(array $data)
     {
-        if (empty($data['post_date'])) {
-            $data['post_date'] = now();
-        }
-        return Post::create($data);
+        $defaults = [
+            'post_author'        => 0,
+            'post_date'          => now(),
+            'post_date_gmt'      => now()->setTimezone('UTC'),
+            'post_content'       => '',
+            'post_title'         => '',
+            'post_excerpt'       => '',
+            'post_status'        => 'draft',
+            'comment_status'     => 'open',
+            'ping_status'        => 'open',
+            'post_password'      => '',
+            'post_name'          => '',
+            'to_ping'            => '',
+            'pinged'             => '',
+            'post_modified'      => now(),
+            'post_modified_gmt'  => now()->setTimezone('UTC'),
+            'post_content_filtered' => '',
+            'post_parent'        => 0,
+            'guid'               => '',
+            'menu_order'         => 0,
+            'post_type'          => 'post',
+            'post_mime_type'     => '',
+            'comment_count'      => 0,
+        ];
+
+        $postData = array_merge($defaults, $data);
+
+        return Post::create($postData);
     }
 
     public function update(int $id, array $data): bool

@@ -8,8 +8,21 @@ class TermTaxonomy extends Model
 {
     protected $primaryKey = 'term_taxonomy_id';
     protected $table;
-    protected $guarded = [];
     public $timestamps = false;
+
+    protected $fillable = [
+        'term_id',
+        'taxonomy',
+        'description',
+        'parent',
+        'count',
+    ];
+
+    protected $attributes = [
+        'description' => '',
+        'parent'      => 0,
+        'count'       => 0,
+    ];
 
     public function __construct(array $attributes = [])
     {

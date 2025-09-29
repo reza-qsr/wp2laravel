@@ -63,7 +63,6 @@ class DbPostRepositoryTest extends TestCase
 
     public function test_tax_query_by_slug()
     {
-        // create a term and taxonomy and relationship to post
         $post = $this->repo->insert(['post_title' => 'Taxed', 'post_type'=>'post']);
 
         $term = \RezaQsr\Wp2Laravel\Models\Term::create(['name'=>'News','slug'=>'news']);

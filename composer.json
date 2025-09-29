@@ -11,6 +11,11 @@
       "src/helpers.php"
     ]
   },
+  "autoload-dev": {
+    "psr-4": {
+      "RezaQsr\\Wp2Laravel\\Tests\\": "tests/"
+    }
+  },
   "extra": {
     "laravel": {
       "providers": [
@@ -20,5 +25,9 @@
         "Wp2Laravel": "RezaQsr\\Wp2Laravel\\Facades\\Wp2Laravel"
       }
     }
+  },
+  "require-dev": {
+    "orchestra/testbench": "^10.0",
+    "phpunit/phpunit": "^11.0"
   }
 }

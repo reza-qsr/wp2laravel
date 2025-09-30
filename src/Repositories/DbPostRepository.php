@@ -51,41 +51,8 @@ class DbPostRepository implements PostRepositoryInterface
             $q->offset((int) $args['offset']);
         }
 
-        if (!empty($args['meta_query']) && is_array($args['meta_query'])) {
-            $metaQuery = $args['meta_query'];
-            $relation = strtoupper($metaQuery['relation'] ?? 'AND');
-
-            if ($relation === 'OR') {
-                $q->whereHas('metas', function (Builder $mq) use ($metaQuery) {
-                    $conds = array_filter($metaQuery, function ($k) {
-                        return $k !== 'relation';
-                    }, ARRAY_FILTER_USE_KEY);
-                    $mq->where(function (Builder $inner) use ($conds) {
-                        $first = true;
-                        foreach ($conds as $cond) {
-                            $key = $cond['key'] ?? null;
-                            $value = $cond['value'] ?? null;
-                            $compare = strtoupper($cond['compare'] ?? '=');
-                            if ($first) {
-                                $this->applyMetaCondition($inner, $key, $compare, $value, false);
-                                $first = false;
-                            } else {
-                                $this->applyMetaCondition($inner, $key, $compare, $value, true);
-                            }
-                        }
-                    });
-                });
-            } else {
-                foreach ($metaQuery as $cond) {
-                    if ($cond === 'relation') continue;
-                    $key = $cond['key'] ?? null;
-                    $value = $cond['value'] ?? null;
-                    $compare = strtoupper($cond['compare'] ?? '=');
-                    $q->whereHas('metas', function (Builder $mq) use ($key, $compare, $value) {
-                        $this->applyMetaCondition($mq, $key, $compare, $value, false);
-                    });
-                }
-            }
+        if (!empty($args['meta_query'])) {
+            $this->applyMetaQuery($q, $args['meta_query']);
         }
 
         if (!empty($args['tax_query'])) {
@@ -196,47 +163,40 @@ class DbPostRepository implements PostRepositoryInterface
         }
         return $maybe;
     }
-    protected function applyMetaCondition(Builder $mq, $key, $compare, $value, $useOr = false)
+    protected function applyMetaQuery($query, array $metaQuery): void
     {
-        $method = $useOr ? 'orWhere' : 'where';
+        $relation = strtoupper($metaQuery['relation'] ?? 'AND');
+        $clauses = $metaQuery;
+        unset($clauses['relation']);
 
-        switch ($compare) {
-            case 'IN':
-                $mq->{$method}('meta_key', $key);
-                $mq->{$method . 'In'}('meta_value', (array) $value);
-                $mq->where('meta_key', $key)->whereIn('meta_value', (array) $value);
-                break;
+        $query->where(function ($q) use ($clauses, $relation) {
+            foreach ($clauses as $clause) {
+                $key     = $clause['key'] ?? null;
+                $value   = $clause['value'] ?? null;
+                $compare = strtoupper($clause['compare'] ?? '=');
+                $type    = strtoupper($clause['type'] ?? 'CHAR');
 
-            case 'LIKE':
-                if ($useOr) {
-                    $mq->orWhere(function (Builder $q) use ($key, $value) {
-                        $q->where('meta_key', $key)
-                            ->where('meta_value', 'LIKE', "%{$value}%");
-                    });
-                } else {
-                    $mq->where(function (Builder $q) use ($key, $value) {
-                        $q->where('meta_key', $key)
-                            ->where('meta_value', 'LIKE', "%{$value}%");
-                    });
-                }
-                break;
+                $q->{$relation === 'AND' ? 'whereHas' : 'orWhereHas'}('meta', function ($q2) use ($key, $value, $compare, $type) {
+                    if ($key) {
+                        $q2->where('meta_key', $key);
+                    }
 
-            default:
-                if ($useOr) {
-                    $mq->orWhere(function (Builder $q) use ($key, $compare, $value) {
-                        $q->where('meta_key', $key)
-                            ->where('meta_value', $compare, $value);
-                    });
-                } else {
-                    $mq->where(function (Builder $q) use ($key, $compare, $value) {
-                        $q->where('meta_key', $key)
-                            ->where('meta_value', $compare, $value);
-                    });
-                }
-        }
+                    if ($value !== null) {
+                        if ($type === 'NUMERIC') {
+                            $q2->whereRaw("CAST(meta_value AS SIGNED) {$compare} ?", (array) $value);
+                        } elseif (in_array($compare, ['IN', 'NOT IN'])) {
+                            $q2->whereIn('meta_value', (array) $value, 'and', $compare === 'NOT IN');
+                        } elseif ($compare === 'BETWEEN') {
+                            $q2->whereBetween('meta_value', $value);
+                        } else {
+                            $q2->where('meta_value', $compare, $value);
+                        }
+                    }
+                });
+            }
+        });
     }
-
-    public function applyTaxQuery($query, array $taxQuery): void
+    protected function applyTaxQuery($query, array $taxQuery): void
     {
         $relation = strtoupper($taxQuery['relation'] ?? 'AND');
         $clauses = $taxQuery;

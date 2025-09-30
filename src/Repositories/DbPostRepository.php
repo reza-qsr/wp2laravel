@@ -88,50 +88,8 @@ class DbPostRepository implements PostRepositoryInterface
             }
         }
 
-        if (!empty($args['tax_query']) && is_array($args['tax_query'])) {
-            $taxQuery = $args['tax_query'];
-            $relation = strtoupper($taxQuery['relation'] ?? 'AND');
-            $conds = array_filter($taxQuery, function ($k) {
-                return $k !== 'relation';
-            }, ARRAY_FILTER_USE_KEY);
-
-            if ($relation === 'OR') {
-                $q->whereHas('termTaxonomies', function (Builder $tq) use ($conds) {
-                    $first = true;
-                    foreach ($conds as $cond) {
-                        $taxonomy = $cond['taxonomy'] ?? null;
-                        $terms = (array) ($cond['terms'] ?? []);
-                        $field = $cond['field'] ?? 'term_id'; // پیش‌فرض مثل وردپرس term_id
-
-                        $callback = function (Builder $inner) use ($taxonomy, $terms, $field) {
-                            $inner->where('taxonomy', $taxonomy)
-                                ->whereHas('term', function (Builder $qt) use ($terms, $field) {
-                                    $qt->whereIn($field, $terms);
-                                });
-                        };
-
-                        if ($first) {
-                            $tq->where($callback);
-                            $first = false;
-                        } else {
-                            $tq->orWhere($callback);
-                        }
-                    }
-                });
-            } else {
-                foreach ($conds as $cond) {
-                    $taxonomy = $cond['taxonomy'] ?? null;
-                    $terms = (array) ($cond['terms'] ?? []);
-                    $field = $cond['field'] ?? 'term_id';
-
-                    $q->whereHas('termTaxonomies', function (Builder $tq) use ($taxonomy, $terms, $field) {
-                        $tq->where('taxonomy', $taxonomy)
-                            ->whereHas('term', function (Builder $qt) use ($terms, $field) {
-                                $qt->whereIn($field, $terms);
-                            });
-                    });
-                }
-            }
+        if (!empty($args['tax_query'])) {
+            $this->applyTaxQuery($q, $args['tax_query']);
         }
 
 
@@ -276,5 +234,43 @@ class DbPostRepository implements PostRepositoryInterface
                     });
                 }
         }
+    }
+
+    public function applyTaxQuery($query, array $taxQuery): void
+    {
+        $relation = strtoupper($taxQuery['relation'] ?? 'AND');
+        $clauses = $taxQuery;
+        unset($clauses['relation']);
+
+        $query->where(function ($q) use ($clauses, $relation) {
+            foreach ($clauses as $clause) {
+                $operator = strtoupper($clause['operator'] ?? 'IN');
+                $taxonomy = $clause['taxonomy'];
+                $field    = $clause['field'] ?? 'id';
+                $terms    = $clause['terms'] ?? [];
+
+                $q->{$relation === 'AND' ? 'whereHas' : 'orWhereHas'}('taxonomies', function ($q2) use ($taxonomy, $field, $terms, $operator) {
+                    $q2->where('taxonomy', $taxonomy)
+                        ->whereHas('term', function ($q3) use ($field, $terms, $operator) {
+                            // فیلد انتخابی
+                            $column = match ($field) {
+                                'slug' => 'slug',
+                                'name' => 'name',
+                                default => 'term_id'
+                            };
+
+                            if ($operator === 'IN') {
+                                $q3->whereIn($column, $terms);
+                            } elseif ($operator === 'NOT IN') {
+                                $q3->whereNotIn($column, $terms);
+                            } elseif ($operator === 'AND') {
+                                foreach ($terms as $term) {
+                                    $q3->where($column, $term);
+                                }
+                            }
+                        });
+                });
+            }
+        });
     }
 }

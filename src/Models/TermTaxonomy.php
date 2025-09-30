@@ -30,6 +30,22 @@ class TermTaxonomy extends Model
         $this->table = config('wp2laravel.term_taxonomy_table', 'wp_term_taxonomy');
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($taxonomy) {
+            $existing = static::where('term_id', $taxonomy->term_id)
+                ->where('taxonomy', $taxonomy->taxonomy)
+                ->first();
+
+            if ($existing) {
+                $taxonomy->exists = true;
+                $taxonomy->term_taxonomy_id = $existing->term_taxonomy_id;
+                return false;
+            }
+        });
+    }
+
     public function term()
     {
         return $this->belongsTo(Term::class, 'term_id', 'term_id');

@@ -2,10 +2,11 @@
 
 namespace RezaQsr\Wp2Laravel;
 
+use RezaQsr\Wp2Laravel\Contracts\Wp2LaravelManagerInterface;
 use RezaQsr\Wp2Laravel\Services\OptionService;
 use RezaQsr\Wp2Laravel\Services\PostService;
 
-class Wp2LaravelManager
+class Wp2LaravelManager implements Wp2LaravelManagerInterface
 {
     protected OptionService $options;
     protected PostService $posts;

@@ -158,36 +158,79 @@ class DbPostRepository implements PostRepositoryInterface
     protected function applyMetaQuery($query, array $metaQuery): void
     {
         $relation = strtoupper($metaQuery['relation'] ?? 'AND');
-        $clauses = $metaQuery;
+        $clauses  = $metaQuery;
         unset($clauses['relation']);
 
         $query->where(function ($q) use ($clauses, $relation) {
             foreach ($clauses as $clause) {
-                $key     = $clause['key'] ?? null;
-                $value   = $clause['value'] ?? null;
+                $key     = $clause['key']     ?? null;
+                $value   = $clause['value']   ?? null;
                 $compare = strtoupper($clause['compare'] ?? '=');
-                $type    = strtoupper($clause['type'] ?? 'CHAR');
+                $type    = strtoupper($clause['type']    ?? 'CHAR');
 
-                $q->{$relation === 'AND' ? 'whereHas' : 'orWhereHas'}('meta', function ($q2) use ($key, $value, $compare, $type) {
+                $method = $relation === 'AND' ? 'whereHas' : 'orWhereHas';
+
+                $q->{$method}('meta', function ($q2) use ($key, $value, $compare, $type) {
                     if ($key) {
                         $q2->where('meta_key', $key);
                     }
 
+                    if (in_array($compare, ['EXISTS', 'NOT EXISTS'])) {
+                        if ($compare === 'NOT EXISTS') {
+                            $q2->whereRaw('1=0');
+                        }
+                        return;
+                    }
+
                     if ($value !== null) {
-                        if ($type === 'NUMERIC') {
-                            $q2->whereRaw("CAST(meta_value AS SIGNED) {$compare} ?", (array) $value);
-                        } elseif (in_array($compare, ['IN', 'NOT IN'])) {
-                            $q2->whereIn('meta_value', (array) $value, 'and', $compare === 'NOT IN');
-                        } elseif ($compare === 'BETWEEN') {
-                            $q2->whereBetween('meta_value', $value);
-                        } else {
-                            $q2->where('meta_value', $compare, $value);
+                        switch ($compare) {
+                            case '=':
+                            case '!=':
+                            case '>':
+                            case '>=':
+                            case '<':
+                            case '<=':
+                                if ($type === 'NUMERIC') {
+                                    $q2->whereRaw("CAST(meta_value AS SIGNED) {$compare} ?", [(int)$value]);
+                                } else {
+                                    $q2->where('meta_value', $compare, $value);
+                                }
+                                break;
+
+                            case 'LIKE':
+                                $q2->where('meta_value', 'LIKE', "%{$value}%");
+                                break;
+
+                            case 'NOT LIKE':
+                                $q2->where('meta_value', 'NOT LIKE', "%{$value}%");
+                                break;
+
+                            case 'IN':
+                                $q2->whereIn('meta_value', (array)$value);
+                                break;
+
+                            case 'NOT IN':
+                                $q2->whereNotIn('meta_value', (array)$value);
+                                break;
+
+                            case 'BETWEEN':
+                                $q2->whereBetween('meta_value', (array)$value);
+                                break;
+
+                            case 'NOT BETWEEN':
+                                $q2->whereNotBetween('meta_value', (array)$value);
+                                break;
+
+                            default:
+                                $q2->where('meta_value', $compare, $value);
+                                break;
                         }
                     }
                 });
             }
         });
     }
+
     protected function applyTaxQuery($query, array $taxQuery): void
     {
         $relation = strtoupper($taxQuery['relation'] ?? 'AND');
@@ -201,14 +244,13 @@ class DbPostRepository implements PostRepositoryInterface
                 $field    = strtolower($clause['field'] ?? 'id');
                 $terms    = $clause['terms'] ?? [];
 
-                // نگاشت field به ستون دیتابیس
+
                 $column = match ($field) {
                     'slug' => 'slug',
                     'name' => 'name',
                     default => 'term_id'
                 };
 
-                // انتخاب where یا orWhere براساس relation
                 $method = $relation === 'AND' ? 'whereHas' : 'orWhereHas';
 
                 $q->{$method}('taxonomies', function ($q2) use ($taxonomy, $column, $terms, $operator) {

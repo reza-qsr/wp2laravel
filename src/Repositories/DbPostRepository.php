@@ -197,31 +197,68 @@ class DbPostRepository implements PostRepositoryInterface
         $query->where(function ($q) use ($clauses, $relation) {
             foreach ($clauses as $clause) {
                 $operator = strtoupper($clause['operator'] ?? 'IN');
-                $taxonomy = $clause['taxonomy'];
-                $field    = $clause['field'] ?? 'id';
+                $taxonomy = $clause['taxonomy'] ?? null;
+                $field    = strtolower($clause['field'] ?? 'id');
                 $terms    = $clause['terms'] ?? [];
 
-                $q->{$relation === 'AND' ? 'whereHas' : 'orWhereHas'}('taxonomies', function ($q2) use ($taxonomy, $field, $terms, $operator) {
-                    $q2->where('taxonomy', $taxonomy)
-                        ->whereHas('term', function ($q3) use ($field, $terms, $operator) {
-                            $column = match ($field) {
-                                'slug' => 'slug',
-                                'name' => 'name',
-                                default => 'term_id'
-                            };
+                // نگاشت field به ستون دیتابیس
+                $column = match ($field) {
+                    'slug' => 'slug',
+                    'name' => 'name',
+                    default => 'term_id'
+                };
 
-                            if ($operator === 'IN') {
+                // انتخاب where یا orWhere براساس relation
+                $method = $relation === 'AND' ? 'whereHas' : 'orWhereHas';
+
+                $q->{$method}('taxonomies', function ($q2) use ($taxonomy, $column, $terms, $operator) {
+                    if ($taxonomy) {
+                        $q2->where('taxonomy', $taxonomy);
+                    }
+
+                    $q2->whereHas('term', function ($q3) use ($column, $terms, $operator) {
+                        switch ($operator) {
+                            case 'IN':
                                 $q3->whereIn($column, $terms);
-                            } elseif ($operator === 'NOT IN') {
+                                break;
+
+                            case 'NOT IN':
                                 $q3->whereNotIn($column, $terms);
-                            } elseif ($operator === 'AND') {
+                                break;
+
+                            case 'AND':
                                 foreach ($terms as $term) {
                                     $q3->where($column, $term);
                                 }
-                            }
-                        });
+                                break;
+
+                            case 'EXISTS':
+                                break;
+
+                            case 'NOT EXISTS':
+                                $q3->whereRaw('1=0');
+                                break;
+                        }
+                    });
                 });
+                if ($operator === 'NOT EXISTS') {
+                    $method = $relation === 'AND' ? 'whereDoesntHave' : 'orWhereDoesntHave';
+                    $q->{$method}('taxonomies', function ($q2) use ($taxonomy) {
+                        if ($taxonomy) {
+                            $q2->where('taxonomy', $taxonomy);
+                        }
+                    });
+                }
+                if ($operator === 'EXISTS') {
+                    $method = $relation === 'AND' ? 'whereHas' : 'orWhereHas';
+                    $q->{$method}('taxonomies', function ($q2) use ($taxonomy) {
+                        if ($taxonomy) {
+                            $q2->where('taxonomy', $taxonomy);
+                        }
+                    });
+                }
             }
         });
     }
+
 }

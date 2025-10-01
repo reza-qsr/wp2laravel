@@ -6,17 +6,14 @@ use RezaQsr\Wp2Laravel\Contracts\PostRepositoryInterface;
 use RezaQsr\Wp2Laravel\Models\Post;
 use RezaQsr\Wp2Laravel\Models\PostMeta;
 use RezaQsr\Wp2Laravel\Models\TermRelationship;
-use RezaQsr\Wp2Laravel\Models\TermTaxonomy;
-use Illuminate\Database\Eloquent\Builder;
 
 class DbPostRepository implements PostRepositoryInterface
 {
     public function find(int $id)
     {
-        return Post::find($id);
+        return Post::query()->find($id);
     }
-
-    public function query(array $args = [])
+    public function query(array $args = []): \Illuminate\Database\Eloquent\Collection
     {
         $q = Post::with(['metas', 'termTaxonomies']);
 
@@ -94,15 +91,12 @@ class DbPostRepository implements PostRepositoryInterface
 
         return Post::create($postData);
     }
-
     public function update(int $id, array $data): bool
     {
         $post = Post::find($id);
         if (!$post) return false;
         return $post->update($data);
     }
-
-
     public function delete(int $id): bool
     {
         PostMeta::where('post_id', $id)->delete();
@@ -120,7 +114,6 @@ class DbPostRepository implements PostRepositoryInterface
 
         return $this->maybeUnserialize($meta->meta_value);
     }
-
     public function updateMeta(int $postId, string $key, $value): bool
     {
         $serialized = $this->maybeSerialize($value);
@@ -140,7 +133,6 @@ class DbPostRepository implements PostRepositoryInterface
             'meta_value' => $serialized,
         ]);
     }
-
     public function deleteMeta(int $postId, string $key): bool
     {
         return PostMeta::where('post_id', $postId)
@@ -212,7 +204,6 @@ class DbPostRepository implements PostRepositoryInterface
                 $q->{$relation === 'AND' ? 'whereHas' : 'orWhereHas'}('taxonomies', function ($q2) use ($taxonomy, $field, $terms, $operator) {
                     $q2->where('taxonomy', $taxonomy)
                         ->whereHas('term', function ($q3) use ($field, $terms, $operator) {
-                            // فیلد انتخابی
                             $column = match ($field) {
                                 'slug' => 'slug',
                                 'name' => 'name',

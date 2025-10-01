@@ -10,7 +10,6 @@ use RezaQsr\Wp2Laravel\Repositories\DbOptionRepository;
 use RezaQsr\Wp2Laravel\Repositories\DbPostRepository;
 use RezaQsr\Wp2Laravel\Services\OptionService;
 use RezaQsr\Wp2Laravel\Services\PostService;
-use RezaQsr\Wp2Laravel\Wp2LaravelManager;
 
 class Wp2LaravelServiceProvider extends ServiceProvider
 {

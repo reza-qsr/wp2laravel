@@ -8,9 +8,15 @@ class PostMeta extends Model
 {
     protected $primaryKey = 'meta_id';
     protected $table;
-    protected $guarded = [];
     public $timestamps = false;
-
+    protected $fillable = [
+        'post_id',
+        'meta_key',
+        'meta_value',
+    ];
+    protected $attributes = [
+        'meta_value' => '',
+    ];
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);

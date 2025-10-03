@@ -38,7 +38,7 @@ class PostService
         return $this->repo->delete($id);
     }
 
-    // meta helpers
+
     public function getPostMeta(int $postId, string $key, $default = null)
     {
         return $this->repo->getMeta($postId, $key, $default);

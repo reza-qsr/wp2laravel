@@ -6,13 +6,13 @@ use RezaQsr\Wp2Laravel\Services\OptionService;
 
 trait HasWpOptions
 {
-    // دسترسی به سرویس option
+
     protected function optionsService(): OptionService
     {
         return app(OptionService::class);
     }
 
-    // متد مشابه WP
+
     public function get_option(string $key, $default = null)
     {
         return $this->optionsService()->getOption($key, $default);

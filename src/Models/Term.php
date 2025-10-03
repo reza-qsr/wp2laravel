@@ -19,7 +19,7 @@ class Term extends Model
     }
 
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::creating(function (Term $term) {
             $slug = $term->slug ?: Str::slug($term->name);
@@ -33,7 +33,7 @@ class Term extends Model
         });
     }
 
-    public function taxonomies()
+    public function taxonomies(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(TermTaxonomy::class, 'term_id', 'term_id');
     }

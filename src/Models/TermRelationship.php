@@ -16,4 +16,14 @@ class TermRelationship extends Model
         parent::__construct($attributes);
         $this->table = config('wp2laravel.term_relationships_table', 'wp_term_relationships');
     }
+
+    public function post(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Post::class, 'object_id');
+    }
+
+    public function taxonomy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(TermTaxonomy::class, 'term_taxonomy_id');
+    }
 }

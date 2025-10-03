@@ -30,7 +30,7 @@ class TermTaxonomy extends Model
         $this->table = config('wp2laravel.term_taxonomy_table', 'wp_term_taxonomy');
     }
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
         static::creating(function ($taxonomy) {
@@ -46,8 +46,12 @@ class TermTaxonomy extends Model
         });
     }
 
-    public function term()
+    public function term(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Term::class, 'term_id', 'term_id');
+    }
+    public function posts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, config('wp2laravel.term_relationships_table', 'wp_term_relationships'), 'term_taxonomy_id', 'object_id');
     }
 }

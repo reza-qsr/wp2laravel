@@ -19,7 +19,7 @@ class Post extends Model
         $this->table = config('wp2laravel.posts_table', 'wp_posts');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::creating(function (Post $post) {
             $slug = $post->post_name ?: Str::slug($post->post_title);
@@ -33,18 +33,30 @@ class Post extends Model
         });
     }
 
-    public function metas()
+    public function metas(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PostMeta::class, 'post_id', $this->primaryKey);
     }
 
-    public function termTaxonomies()
+    public function termTaxonomies(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(
             TermTaxonomy::class,
             config('wp2laravel.term_relationships_table', 'wp_term_relationships'),
             'object_id',
             'term_taxonomy_id'
+        );
+    }
+
+    public function terms(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Term::class,
+            TermTaxonomy::class,
+            'term_taxonomy_id',
+            'term_id',
+            'ID',
+            'term_id'
         );
     }
 }

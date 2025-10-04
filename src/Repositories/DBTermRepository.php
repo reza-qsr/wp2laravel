@@ -6,7 +6,7 @@ use RezaQsr\Wp2Laravel\Models\Term;
 use RezaQsr\Wp2Laravel\Models\TermTaxonomy;
 use RezaQsr\Wp2Laravel\Models\TermRelationship;
 use Illuminate\Support\Str;
-class TermRepository
+class DBTermRepository
 {
     public function getTerms(array $args = [])
     {
@@ -64,5 +64,6 @@ class TermRepository
                 'term_taxonomy_id' => $termId,
             ]);
         }
+        return true;
     }
 }

@@ -5,16 +5,21 @@ namespace RezaQsr\Wp2Laravel;
 use RezaQsr\Wp2Laravel\Contracts\Wp2LaravelManagerInterface;
 use RezaQsr\Wp2Laravel\Services\OptionService;
 use RezaQsr\Wp2Laravel\Services\PostService;
+use RezaQsr\Wp2Laravel\Services\TermService;
 
 class Wp2LaravelManager implements Wp2LaravelManagerInterface
 {
     protected OptionService $options;
     protected PostService $posts;
 
-    public function __construct(OptionService $options , PostService $posts)
+    protected TermService $terms;
+
+
+    public function __construct(OptionService $options , PostService $posts , TermService $terms)
     {
         $this->options = $options;
         $this->posts = $posts;
+        $this->terms = $terms;
     }
 
     public function getOption(string $key, $default = null)
@@ -73,6 +78,22 @@ class Wp2LaravelManager implements Wp2LaravelManagerInterface
     public function deletePostMeta(int $postId, string $key)
     {
         return $this->posts->deletePostMeta($postId, $key);
+    }
+
+
+    public function getTerms(array $args = [])
+    {
+        return $this->terms->getTerms($args);
+    }
+
+    public function insertTerm(string $term, string $taxonomy, array $args = [])
+    {
+        return $this->terms->insertTerm($term, $taxonomy, $args);
+    }
+
+    public function setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false)
+    {
+        return $this->terms->setPostTerms($postId, $terms, $taxonomy, $append);
     }
 
 }

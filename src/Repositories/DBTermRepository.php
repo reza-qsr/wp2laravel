@@ -2,11 +2,12 @@
 
 namespace RezaQsr\Wp2Laravel\Repositories;
 
+use RezaQsr\Wp2Laravel\Contracts\TermRepositoryInterface;
 use RezaQsr\Wp2Laravel\Models\Term;
 use RezaQsr\Wp2Laravel\Models\TermTaxonomy;
 use RezaQsr\Wp2Laravel\Models\TermRelationship;
 use Illuminate\Support\Str;
-class DBTermRepository
+class DBTermRepository implements TermRepositoryInterface
 {
     public function getTerms(array $args = [])
     {
@@ -28,8 +29,6 @@ class DBTermRepository
 
         return $query->get();
     }
-
-
     public function insertTerm(string $term, string $taxonomy, array $args = [])
     {
         $slug = $args['slug'] ?? Str::slug($term);
@@ -47,8 +46,6 @@ class DBTermRepository
 
         return [$termModel, $taxonomyModel];
     }
-
-
     public function setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false)
     {
         if (!$append) {

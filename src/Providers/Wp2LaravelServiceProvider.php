@@ -13,6 +13,7 @@ use RezaQsr\Wp2Laravel\Repositories\DBTermRepository;
 use RezaQsr\Wp2Laravel\Services\OptionService;
 use RezaQsr\Wp2Laravel\Services\PostService;
 use RezaQsr\Wp2Laravel\Services\TermService;
+use RezaQsr\Wp2Laravel\Wp2LaravelManager;
 
 class Wp2LaravelServiceProvider extends ServiceProvider
 {
@@ -36,7 +37,7 @@ class Wp2LaravelServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton('wp2laravel', function($app) {
-            return new \RezaQsr\Wp2Laravel\Wp2LaravelManager(
+            return new Wp2LaravelManager(
                 $app->make(OptionService::class),
                 $app->make(PostService::class),
                 $app->make(TermService::class)

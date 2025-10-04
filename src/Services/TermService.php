@@ -13,17 +13,17 @@ class TermService
         $this->repo = $repo;
     }
 
-    public function get_terms(array $args = [])
+    public function getTerms(array $args = [])
     {
         return $this->repo->getTerms($args);
     }
 
-    public function insert_term(string $term, string $taxonomy, array $args = [])
+    public function insertTerm(string $term, string $taxonomy, array $args = [])
     {
         return $this->repo->insertTerm($term, $taxonomy, $args);
     }
 
-    public function set_post_terms(int $postId, array $terms, string $taxonomy, bool $append = false)
+    public function setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false)
     {
         return $this->repo->setPostTerms($postId, $terms, $taxonomy, $append);
     }

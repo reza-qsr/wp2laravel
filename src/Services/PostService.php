@@ -43,7 +43,10 @@ class PostService
     {
         return $this->repo->getMeta($postId, $key, $default);
     }
-
+    public function hasPostMeta(int $postId, string $key): bool
+    {
+        return $this->repo->hasMeta($postId, $key);
+    }
     public function updatePostMeta(int $postId, string $key, $value): bool
     {
         return $this->repo->updateMeta($postId, $key, $value);

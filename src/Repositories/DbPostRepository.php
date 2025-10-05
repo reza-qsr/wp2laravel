@@ -114,6 +114,12 @@ class DbPostRepository implements PostRepositoryInterface
 
         return $this->maybeUnserialize($meta->meta_value);
     }
+    public function hasMeta(int $postId, string $key): bool
+    {
+        return PostMeta::where('post_id', $postId)
+            ->where('meta_key', $key)
+            ->exists();
+    }
     public function updateMeta(int $postId, string $key, $value): bool
     {
         $serialized = $this->maybeSerialize($value);

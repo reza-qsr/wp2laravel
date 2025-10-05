@@ -32,7 +32,6 @@ class TermTaxonomy extends Model
 
     protected static function boot(): void
     {
-        parent::boot();
         static::creating(function ($taxonomy) {
             $existing = static::where('term_id', $taxonomy->term_id)
                 ->where('taxonomy', $taxonomy->taxonomy)
@@ -41,7 +40,6 @@ class TermTaxonomy extends Model
             if ($existing) {
                 $taxonomy->exists = true;
                 $taxonomy->term_taxonomy_id = $existing->term_taxonomy_id;
-                return false;
             }
         });
     }

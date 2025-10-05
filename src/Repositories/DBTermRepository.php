@@ -40,7 +40,7 @@ class DBTermRepository implements TermRepositoryInterface
         );
 
         $taxonomyModel = TermTaxonomy::firstOrCreate(
-            ['term_id' => $termModel->id, 'taxonomy' => $taxonomy],
+            ['term_id' => $termModel->term_id, 'taxonomy' => $taxonomy],
             ['description' => $description, 'parent' => $args['parent'] ?? 0]
         );
 

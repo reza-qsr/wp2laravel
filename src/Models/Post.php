@@ -33,12 +33,12 @@ class Post extends Model
         });
     }
 
-    public function metas(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function meta(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PostMeta::class, 'post_id', $this->primaryKey);
     }
 
-    public function termTaxonomies(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function taxonomies(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(
             TermTaxonomy::class,

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TermRelationship extends Model
 {
     protected $table;
-    protected $guarded = [];
+    protected $fillable = ['object_id', 'term_taxonomy_id'];
     public $timestamps = false;
     public $incrementing = false;
 

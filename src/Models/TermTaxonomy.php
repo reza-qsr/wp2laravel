@@ -48,6 +48,10 @@ class TermTaxonomy extends Model
     {
         return $this->belongsTo(Term::class, 'term_id', 'term_id');
     }
+    public function children()
+    {
+        return $this->hasMany(self::class, 'parent');
+    }
     public function posts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Post::class, config('wp2laravel.term_relationships_table', 'wp_term_relationships'), 'term_taxonomy_id', 'object_id');

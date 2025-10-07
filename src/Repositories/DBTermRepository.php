@@ -60,7 +60,29 @@ class DBTermRepository implements TermRepositoryInterface
 
         return [$termModel, $taxonomyModel];
     }
+    public function updateTerm(int $termId, string $taxonomy, array $args = [])
+    {
+        $term = Term::findOrFail($termId);
+        $termTax = TermTaxonomy::where('term_id', $termId)->where('taxonomy', $taxonomy)->first();
 
+        if (isset($args['name'])) {
+            $term->name = $args['name'];
+        }
+        if (isset($args['slug'])) {
+            $term->slug = Str::slug($args['slug']);
+        }
+
+        $term->save();
+
+        if ($termTax) {
+            $termTax->update([
+                'description' => $args['description'] ?? $termTax->description,
+                'parent' => $args['parent'] ?? $termTax->parent,
+            ]);
+        }
+
+        return $term;
+    }
     public function deleteTerm(int $termId, string $taxonomy): bool
     {
         $termTax = TermTaxonomy::where('term_id', $termId)
@@ -94,5 +116,12 @@ class DBTermRepository implements TermRepositoryInterface
             ]);
         }
         return true;
+    }
+    public function getPostTerms(int $postId, string $taxonomy)
+    {
+        return Term::whereHas('taxonomies', function ($q) use ($taxonomy, $postId) {
+            $q->where('taxonomy', $taxonomy)
+                ->whereHas('posts', fn($q2) => $q2->where('object_id', $postId));
+        })->get();
     }
 }

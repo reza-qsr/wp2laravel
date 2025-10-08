@@ -19,19 +19,19 @@ class Term extends Model
     }
 
 
-    protected static function booted(): void
-    {
-        static::creating(function (Term $term) {
-            $slug = $term->slug ?: Str::slug($term->name);
-
-            $baseSlug = $slug;
-            $i = 2;
-            while (Term::where('slug', $slug)->exists()) {
-                $slug = $baseSlug . '-' . $i++;
-            }
-            $term->slug = $slug;
-        });
-    }
+//    protected static function booted(): void
+//    {
+//        static::creating(function (Term $term) {
+//            $slug = $term->slug ?: Str::slug($term->name);
+//
+//            $baseSlug = $slug;
+//            $i = 2;
+//            while (Term::where('slug', $slug)->exists()) {
+//                $slug = $baseSlug . '-' . $i++;
+//            }
+//            $term->slug = $slug;
+//        });
+//    }
 
     public function taxonomies(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

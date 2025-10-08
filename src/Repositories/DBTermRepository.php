@@ -164,24 +164,46 @@ class DBTermRepository implements TermRepositoryInterface
 
     public function setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false)
     {
-        $termTaxonomyIds = TermTaxonomy::whereIn('term_id', $terms)
+        $terms = array_unique(array_filter($terms, 'is_numeric'));
+        if (empty($terms)) {
+            if (!$append) {
+                TermRelationship::where('object_id', $postId)
+                    ->whereHas('taxonomy', fn($q) => $q->where('taxonomy', $taxonomy))
+                    ->delete();
+            }
+            return true;
+        }
+
+        $validTermIds = Term::whereIn('term_id', $terms)->pluck('term_id')->toArray();
+
+        if (empty($validTermIds)) {
+            if (!$append) {
+                TermRelationship::where('object_id', $postId)
+                    ->whereHas('taxonomy', fn($q) => $q->where('taxonomy', $taxonomy))
+                    ->delete();
+            }
+            return true;
+        }
+
+        $termTaxonomyIds = TermTaxonomy::whereIn('term_id', $validTermIds)
             ->where('taxonomy', $taxonomy)
             ->pluck('term_taxonomy_id')
             ->toArray();
 
-
-        if (empty($termTaxonomyIds) && !$append) {
-            TermRelationship::where('object_id', $postId)
-                ->whereHas('taxonomy', fn($q) => $q->where('taxonomy', $taxonomy))
-                ->delete();
+        if (empty($termTaxonomyIds)) {
+            if (!$append) {
+                TermRelationship::where('object_id', $postId)
+                    ->whereHas('taxonomy', fn($q) => $q->where('taxonomy', $taxonomy))
+                    ->delete();
+            }
             return true;
         }
-
 
         if (!$append) {
             $oldRelationships = TermRelationship::where('object_id', $postId)
                 ->whereHas('taxonomy', fn($q) => $q->where('taxonomy', $taxonomy))
                 ->get();
+
             foreach ($oldRelationships as $rel) {
                 $rel->taxonomy()->decrement('count');
                 $rel->delete();
@@ -200,6 +222,7 @@ class DBTermRepository implements TermRepositoryInterface
         }
 
         return true;
+
     }
 
     public function getPostTerms(int $postId, string $taxonomy)

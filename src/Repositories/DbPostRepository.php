@@ -164,71 +164,65 @@ class DbPostRepository implements PostRepositoryInterface
     protected function applyMetaQuery($query, array $metaQuery): void
     {
         $relation = strtoupper($metaQuery['relation'] ?? 'AND');
-        $clauses  = $metaQuery;
+        $clauses = $metaQuery;
         unset($clauses['relation']);
 
         $query->where(function ($q) use ($clauses, $relation) {
             foreach ($clauses as $clause) {
+
+                // اگر تو در تو بود
+                if (isset($clause['relation'])) {
+                    $this->applyMetaQuery($q, $clause);
+                    continue;
+                }
+
                 $key     = $clause['key']     ?? null;
                 $value   = $clause['value']   ?? null;
                 $compare = strtoupper($clause['compare'] ?? '=');
-                $type    = strtoupper($clause['type']    ?? 'CHAR');
+                $type    = strtoupper($clause['type'] ?? 'CHAR');
 
                 $method = $relation === 'AND' ? 'whereHas' : 'orWhereHas';
 
-                $q->{$method}('meta', function ($q2) use ($key, $value, $compare, $type) {
+                $q->{$method}('meta', function ($meta) use ($key, $value, $compare, $type) {
                     if ($key) {
-                        $q2->where('meta_key', $key);
+                        $meta->where('meta_key', $key);
                     }
 
-                    if (in_array($compare, ['EXISTS', 'NOT EXISTS'])) {
-                        if ($compare === 'NOT EXISTS') {
-                            $q2->whereRaw('1=0');
-                        }
+                    // پشتیبانی EXISTS و NOT EXISTS واقعی
+                    if ($compare === 'EXISTS') {
+                        $meta->whereNotNull('meta_value');
+                        return;
+                    }
+                    if ($compare === 'NOT EXISTS') {
+                        $meta->whereNull('meta_value');
                         return;
                     }
 
                     if ($value !== null) {
                         switch ($compare) {
-                            case '=':
-                            case '!=':
-                            case '>':
-                            case '>=':
-                            case '<':
-                            case '<=':
-                                if ($type === 'NUMERIC') {
-                                    $q2->whereRaw("CAST(meta_value AS SIGNED) {$compare} ?", [(int)$value]);
-                                } else {
-                                    $q2->where('meta_value', $compare, $value);
-                                }
-                                break;
-
-                            case 'LIKE':
-                                $q2->where('meta_value', 'LIKE', "%{$value}%");
-                                break;
-
-                            case 'NOT LIKE':
-                                $q2->where('meta_value', 'NOT LIKE', "%{$value}%");
-                                break;
-
                             case 'IN':
-                                $q2->whereIn('meta_value', (array)$value);
+                                $meta->whereIn('meta_value', (array)$value);
                                 break;
-
                             case 'NOT IN':
-                                $q2->whereNotIn('meta_value', (array)$value);
+                                $meta->whereNotIn('meta_value', (array)$value);
                                 break;
-
                             case 'BETWEEN':
-                                $q2->whereBetween('meta_value', (array)$value);
+                                $meta->whereBetween('meta_value', (array)$value);
                                 break;
-
                             case 'NOT BETWEEN':
-                                $q2->whereNotBetween('meta_value', (array)$value);
+                                $meta->whereNotBetween('meta_value', (array)$value);
                                 break;
-
+                            case 'LIKE':
+                            case 'NOT LIKE':
+                                $operator = $compare === 'LIKE' ? 'LIKE' : 'NOT LIKE';
+                                $meta->where('meta_value', $operator, "%{$value}%");
+                                break;
                             default:
-                                $q2->where('meta_value', $compare, $value);
+                                if ($type === 'NUMERIC') {
+                                    $meta->whereRaw("CAST(meta_value AS SIGNED) {$compare} ?", [$value]);
+                                } else {
+                                    $meta->where('meta_value', $compare, $value);
+                                }
                                 break;
                         }
                     }

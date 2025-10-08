@@ -71,32 +71,43 @@ class DBTermRepository implements TermRepositoryInterface
     public function update(int $termId, string $taxonomy, array $args = [])
     {
         $term = Term::findOrFail($termId);
-        $termTax = TermTaxonomy::where('term_id', $termId)->where('taxonomy', $taxonomy)->first();
+        $termTax = TermTaxonomy::where('term_id', $termId)
+            ->where('taxonomy', $taxonomy)
+            ->firstOrFail();
 
         if (isset($args['name'])) {
-            $term->name = $args['name'];
+            $term->name = trim($args['name']);
         }
-        if (isset($args['slug'])) {
-            $newSlug = Str::slug($args['slug']);
-            $base = $newSlug;
+
+        if (array_key_exists('slug', $args)) {
+            $newSlug = Str::slug($args['slug'] ?: $term->name);
+            $baseSlug = $newSlug;
             $i = 2;
-            while (Term::where('slug', $newSlug)->where('term_id', '!=', $termId)->exists()) {
-                $newSlug = "{$base}-{$i}";
+            while (
+            Term::where('slug', $newSlug)
+                ->where('term_id', '!=', $termId)
+                ->exists()
+            ) {
+                $newSlug = "{$baseSlug}-{$i}";
                 $i++;
             }
+
             $term->slug = $newSlug;
         }
 
         $term->save();
 
-        if ($termTax) {
-            $termTax->update([
-                'description' => $args['description'] ?? $termTax->description,
-                'parent' => $args['parent'] ?? $termTax->parent,
-            ]);
-        }
-        $term->load('taxonomies');
-        return $term;
+        $termTax->update([
+            'description' => $args['description'] ?? $termTax->description,
+            'parent' => $args['parent'] ?? $termTax->parent,
+        ]);
+
+        return [
+            'term_id' => $term->term_id,
+            'term_taxonomy_id' => $termTax->term_taxonomy_id,
+            'term' => $term,
+            'taxonomy' => $termTax,
+        ];
     }
     public function delete(int $termId, string $taxonomy): bool
     {

@@ -46,17 +46,25 @@ class DBTermRepository implements TermRepositoryInterface
     public function insert(string $term, string $taxonomy, array $args = [])
     {
         $slug = $args['slug'] ?? Str::slug($term);
-        $description = $args['description'] ?? null;
+        $baseSlug = $slug;
+        $i = 2;
 
-        $termModel = Term::firstOrCreate(
-            ['slug' => $slug],
-            ['name' => $term]
-        );
+        while (Term::where('slug', $slug)->exists()) {
+            $slug = "{$baseSlug}-{$i}";
+            $i++;
+        }
 
-        $taxonomyModel = TermTaxonomy::firstOrCreate(
-            ['term_id' => $termModel->term_id, 'taxonomy' => $taxonomy],
-            ['description' => $description, 'parent' => $args['parent'] ?? 0]
-        );
+        $termModel = Term::create([
+            'name' => $term,
+            'slug' => $slug,
+        ]);
+
+        $taxonomyModel = TermTaxonomy::create([
+            'term_id' => $termModel->term_id,
+            'taxonomy' => $taxonomy,
+            'description' => $args['description'] ?? '',
+            'parent' => $args['parent'] ?? 0,
+        ]);
 
         return [$termModel, $taxonomyModel];
     }

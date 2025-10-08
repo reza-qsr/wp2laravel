@@ -69,7 +69,14 @@ class DBTermRepository implements TermRepositoryInterface
             $term->name = $args['name'];
         }
         if (isset($args['slug'])) {
-            $term->slug = Str::slug($args['slug']);
+            $newSlug = Str::slug($args['slug']);
+            $base = $newSlug;
+            $i = 2;
+            while (Term::where('slug', $newSlug)->where('term_id', '!=', $termId)->exists()) {
+                $newSlug = "{$base}-{$i}";
+                $i++;
+            }
+            $term->slug = $newSlug;
         }
 
         $term->save();
@@ -80,7 +87,7 @@ class DBTermRepository implements TermRepositoryInterface
                 'parent' => $args['parent'] ?? $termTax->parent,
             ]);
         }
-
+        $term->load('taxonomies');
         return $term;
     }
     public function delete(int $termId, string $taxonomy): bool

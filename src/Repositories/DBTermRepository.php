@@ -55,7 +55,7 @@ class DBTermRepository implements TermRepositoryInterface
         }
 
         $termModel = Term::create([
-            'name' => $term,
+            'name' => trim($term),
             'slug' => $slug,
         ]);
 
@@ -83,11 +83,7 @@ class DBTermRepository implements TermRepositoryInterface
             $newSlug = Str::slug($args['slug'] ?: $term->name);
             $baseSlug = $newSlug;
             $i = 2;
-            while (
-            Term::where('slug', $newSlug)
-                ->where('term_id', '!=', $termId)
-                ->exists()
-            ) {
+            while (Term::where('slug', $newSlug)->where('term_id', '!=', $termId)->exists()) {
                 $newSlug = "{$baseSlug}-{$i}";
                 $i++;
             }

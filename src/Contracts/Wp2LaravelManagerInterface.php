@@ -14,6 +14,10 @@ interface Wp2LaravelManagerInterface
     public function insertPost(array $data);
     public function updatePost(int $id, array $data);
     public function deletePost(int $id);
+    public function getPostMeta(int $postId, string $key, $default = null);
+    public function hasPostMeta(int $postId, string $key);
+    public function updatePostMeta(int $postId, string $key, $value);
+    public function deletePostMeta(int $postId, string $key);
 
     public function getTerms(array $args = []);
     public function getTermBy(string $field, $value, string $taxonomy);

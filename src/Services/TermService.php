@@ -15,23 +15,23 @@ class TermService
 
     public function getTerms(array $args = [])
     {
-        return $this->repo->getTerms($args);
+        return $this->repo->get($args);
     }
     public function getTermBy(string $field, $value, string $taxonomy)
     {
-        return $this->repo->getTermBy($field, $value, $taxonomy);
+        return $this->repo->getBy($field, $value, $taxonomy);
     }
     public function insertTerm(string $term, string $taxonomy, array $args = [])
     {
-        return $this->repo->insertTerm($term, $taxonomy, $args);
+        return $this->repo->insert($term, $taxonomy, $args);
     }
     public function updateTerm(int $termId, string $taxonomy, array $args = [])
     {
-        return $this->repo->updateTerm($termId, $taxonomy, $args);
+        return $this->repo->update($termId, $taxonomy, $args);
     }
     public function deleteTerm(int $termId, string $taxonomy)
     {
-        return $this->repo->deleteTerm($termId, $taxonomy);
+        return $this->repo->delete($termId, $taxonomy);
     }
     public function setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false)
     {

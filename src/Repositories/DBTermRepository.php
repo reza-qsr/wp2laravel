@@ -9,7 +9,7 @@ use RezaQsr\Wp2Laravel\Models\TermRelationship;
 use Illuminate\Support\Str;
 class DBTermRepository implements TermRepositoryInterface
 {
-    public function getTerms(array $args = [])
+    public function get(array $args = [])
     {
         $query = Term::query()->with('taxonomies');
 
@@ -29,7 +29,7 @@ class DBTermRepository implements TermRepositoryInterface
 
         return $query->get();
     }
-    public function getTermBy(string $field, $value, string $taxonomy)
+    public function getBy(string $field, $value, string $taxonomy)
     {
         $query = Term::query()->with('taxonomies');
 
@@ -43,7 +43,7 @@ class DBTermRepository implements TermRepositoryInterface
         }
         return $query->get();
     }
-    public function insertTerm(string $term, string $taxonomy, array $args = [])
+    public function insert(string $term, string $taxonomy, array $args = [])
     {
         $slug = $args['slug'] ?? Str::slug($term);
         $description = $args['description'] ?? null;
@@ -60,7 +60,7 @@ class DBTermRepository implements TermRepositoryInterface
 
         return [$termModel, $taxonomyModel];
     }
-    public function updateTerm(int $termId, string $taxonomy, array $args = [])
+    public function update(int $termId, string $taxonomy, array $args = [])
     {
         $term = Term::findOrFail($termId);
         $termTax = TermTaxonomy::where('term_id', $termId)->where('taxonomy', $taxonomy)->first();
@@ -83,7 +83,7 @@ class DBTermRepository implements TermRepositoryInterface
 
         return $term;
     }
-    public function deleteTerm(int $termId, string $taxonomy): bool
+    public function delete(int $termId, string $taxonomy): bool
     {
         $termTax = TermTaxonomy::where('term_id', $termId)
             ->where('taxonomy', $taxonomy)

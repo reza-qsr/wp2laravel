@@ -109,21 +109,45 @@ class DBTermRepository implements TermRepositoryInterface
     }
     public function setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false)
     {
-        if (!$append) {
+
+        $termTaxonomyIds = TermTaxonomy::whereIn('term_id', $terms)
+            ->where('taxonomy', $taxonomy)
+            ->pluck('term_taxonomy_id')
+            ->toArray();
+
+
+        if (empty($termTaxonomyIds) && !$append) {
             TermRelationship::where('object_id', $postId)
-                ->whereHas('taxonomy', function ($q) use ($taxonomy) {
-                    $q->where('taxonomy', $taxonomy);
-                })->delete();
+                ->whereHas('taxonomy', fn($q) => $q->where('taxonomy', $taxonomy))
+                ->delete();
+            return true;
         }
 
-        foreach ($terms as $termId) {
-            TermRelationship::firstOrCreate([
-                'object_id' => $postId,
-                'term_taxonomy_id' => $termId,
-            ]);
+
+        if (!$append) {
+            $oldRelationships = TermRelationship::where('object_id', $postId)
+                ->whereHas('taxonomy', fn($q) => $q->where('taxonomy', $taxonomy))
+                ->get();
+            foreach ($oldRelationships as $rel) {
+                $rel->taxonomy()->decrement('count');
+                $rel->delete();
+            }
         }
+
+        foreach ($termTaxonomyIds as $ttId) {
+            $relationship = TermRelationship::firstOrCreate([
+                'object_id' => $postId,
+                'term_taxonomy_id' => $ttId,
+            ]);
+
+            if ($relationship->wasRecentlyCreated) {
+                TermTaxonomy::where('term_taxonomy_id', $ttId)->increment('count');
+            }
+        }
+
         return true;
     }
+
     public function getPostTerms(int $postId, string $taxonomy)
     {
         return Term::whereHas('taxonomies', function ($q) use ($taxonomy, $postId) {

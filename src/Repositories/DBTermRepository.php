@@ -7,6 +7,7 @@ use RezaQsr\Wp2Laravel\Models\Term;
 use RezaQsr\Wp2Laravel\Models\TermTaxonomy;
 use RezaQsr\Wp2Laravel\Models\TermRelationship;
 use Illuminate\Support\Str;
+
 class DBTermRepository implements TermRepositoryInterface
 {
     public function get(array $args = [])
@@ -15,12 +16,12 @@ class DBTermRepository implements TermRepositoryInterface
 
         if (!empty($args['taxonomy'])) {
             $query->whereHas('taxonomies', function ($q) use ($args) {
-                $q->whereIn('taxonomy', (array) $args['taxonomy']);
+                $q->whereIn('taxonomy', (array)$args['taxonomy']);
             });
         }
 
         if (!empty($args['slug'])) {
-            $query->whereIn('slug', (array) $args['slug']);
+            $query->whereIn('slug', (array)$args['slug']);
         }
 
         if (!empty($args['search'])) {
@@ -29,45 +30,76 @@ class DBTermRepository implements TermRepositoryInterface
 
         return $query->get();
     }
+
     public function getBy(string $field, $value, string $taxonomy)
     {
+        $allowed = ['id', 'slug', 'name', 'term_taxonomy_id'];
+        if (!in_array($field, $allowed)) {
+            throw new \InvalidArgumentException("Invalid field '{$field}' for getTermBy.");
+        }
+
         $query = Term::query()->with('taxonomies');
+
+        switch ($field) {
+            case 'id':
+                $query->where('term_id', $value);
+                break;
+            case 'slug':
+                $query->where('slug', $value);
+                break;
+            case 'name':
+                $query->where('name', $value);
+                break;
+            case 'term_taxonomy_id':
+                $query->whereHas('taxonomies', function ($q) use ($value) {
+                    $q->where('term_taxonomy_id', $value);
+                });
+                break;
+        }
 
         if (!empty($taxonomy)) {
             $query->whereHas('taxonomies', function ($q) use ($taxonomy) {
                 $q->where('taxonomy', $taxonomy);
             });
         }
-        if (!empty($field) && !empty($value)) {
-            $query->where($field, $value);
-        }
         return $query->get();
     }
+
     public function insert(string $term, string $taxonomy, array $args = [])
     {
-        $slug = $args['slug'] ?? Str::slug($term);
+        $name = trim($term);
+        $slug = isset($args['slug']) ? Str::slug($args['slug']) : Str::slug($name);
+        $description = $args['description'] ?? '';
+        $parent = $args['parent'] ?? 0;
+
         $baseSlug = $slug;
         $i = 2;
-
         while (Term::where('slug', $slug)->exists()) {
             $slug = "{$baseSlug}-{$i}";
             $i++;
         }
 
         $termModel = Term::create([
-            'name' => trim($term),
+            'name' => $name,
             'slug' => $slug,
         ]);
 
         $taxonomyModel = TermTaxonomy::create([
             'term_id' => $termModel->term_id,
             'taxonomy' => $taxonomy,
-            'description' => $args['description'] ?? '',
-            'parent' => $args['parent'] ?? 0,
+            'description' => $description,
+            'parent' => $parent,
+            'count' => 0,
         ]);
 
-        return [$termModel, $taxonomyModel];
+        return [
+            'term_id' => $termModel->term_id,
+            'term_taxonomy_id' => $taxonomyModel->term_taxonomy_id,
+            'term' => $termModel,
+            'taxonomy' => $taxonomyModel,
+        ];
     }
+
     public function update(int $termId, string $taxonomy, array $args = [])
     {
         $term = Term::findOrFail($termId);
@@ -105,26 +137,33 @@ class DBTermRepository implements TermRepositoryInterface
             'taxonomy' => $termTax,
         ];
     }
+
     public function delete(int $termId, string $taxonomy): bool
     {
+        $term = Term::find($termId);
+        if (!$term) {
+            return false;
+        }
+
         $termTax = TermTaxonomy::where('term_id', $termId)
             ->where('taxonomy', $taxonomy)
             ->first();
 
-        if (!$termTax) return false;
+        if ($termTax) {
+            TermRelationship::where('term_taxonomy_id', $termTax->term_taxonomy_id)->delete();
+            $termTax->delete();
+        }
 
-        TermRelationship::where('term_taxonomy_id', $termTax->term_taxonomy_id)->delete();
-        $termTax->delete();
-
-        if (!TermTaxonomy::where('term_id', $termId)->exists()) {
-            Term::find($termId)?->delete();
+        $remaining = TermTaxonomy::where('term_id', $termId)->count();
+        if ($remaining === 0) {
+            $term->delete();
         }
 
         return true;
     }
+
     public function setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false)
     {
-
         $termTaxonomyIds = TermTaxonomy::whereIn('term_id', $terms)
             ->where('taxonomy', $taxonomy)
             ->pluck('term_taxonomy_id')

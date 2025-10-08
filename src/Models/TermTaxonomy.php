@@ -30,20 +30,6 @@ class TermTaxonomy extends Model
         $this->table = config('wp2laravel.term_taxonomy_table', 'wp_term_taxonomy');
     }
 
-    protected static function boot(): void
-    {
-        static::creating(function ($taxonomy) {
-            $existing = static::where('term_id', $taxonomy->term_id)
-                ->where('taxonomy', $taxonomy->taxonomy)
-                ->first();
-
-            if ($existing) {
-                $taxonomy->exists = true;
-                $taxonomy->term_taxonomy_id = $existing->term_taxonomy_id;
-            }
-        });
-    }
-
     public function term(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Term::class, 'term_id', 'term_id');
@@ -54,6 +40,10 @@ class TermTaxonomy extends Model
     }
     public function posts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(Post::class, config('wp2laravel.term_relationships_table', 'wp_term_relationships'), 'term_taxonomy_id', 'object_id');
+        return $this->belongsToMany(
+            Post::class,
+            config('wp2laravel.term_relationships_table', 'wp_term_relationships'),
+            'term_taxonomy_id',
+            'object_id');
     }
 }

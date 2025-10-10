@@ -37,17 +37,6 @@ class DbPostRepository implements PostRepositoryInterface
             $q->where('post_author', $args['author']);
         }
 
-        if (!empty($args['orderby'])) {
-            $order = $args['order'] ?? 'desc';
-            $q->orderBy($args['orderby'], $order);
-        } else {
-            $q->orderBy('post_date', 'desc');
-        }
-
-        if (!empty($args['offset'])) {
-            $q->offset((int) $args['offset']);
-        }
-
         if (!empty($args['meta_query'])) {
             $this->applyMetaQuery($q, $args['meta_query']);
         }

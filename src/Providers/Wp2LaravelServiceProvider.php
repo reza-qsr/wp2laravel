@@ -6,12 +6,15 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Foundation\AliasLoader;
 use RezaQsr\Wp2Laravel\Contracts\OptionRepositoryInterface;
 use RezaQsr\Wp2Laravel\Contracts\PostRepositoryInterface;
+use RezaQsr\Wp2Laravel\Contracts\TaxonomyRepositoryInterface;
 use RezaQsr\Wp2Laravel\Contracts\TermRepositoryInterface;
 use RezaQsr\Wp2Laravel\Repositories\DbOptionRepository;
 use RezaQsr\Wp2Laravel\Repositories\DbPostRepository;
+use RezaQsr\Wp2Laravel\Repositories\DBTaxonomyRepository;
 use RezaQsr\Wp2Laravel\Repositories\DBTermRepository;
 use RezaQsr\Wp2Laravel\Services\OptionService;
 use RezaQsr\Wp2Laravel\Services\PostService;
+use RezaQsr\Wp2Laravel\Services\TaxonomyService;
 use RezaQsr\Wp2Laravel\Services\TermService;
 use RezaQsr\Wp2Laravel\Wp2LaravelManager;
 
@@ -36,11 +39,17 @@ class Wp2LaravelServiceProvider extends ServiceProvider
             return new TermService($app->make(TermRepositoryInterface::class));
         });
 
+        $this->app->bind(TaxonomyRepositoryInterface::class, DBTaxonomyRepository::class);
+        $this->app->singleton(TaxonomyService::class, function($app) {
+            return new TaxonomyService($app->make(TaxonomyRepositoryInterface::class));
+        });
+
         $this->app->singleton('wp2laravel', function($app) {
             return new Wp2LaravelManager(
                 $app->make(OptionService::class),
                 $app->make(PostService::class),
-                $app->make(TermService::class)
+                $app->make(TermService::class),
+                $app->make(TaxonomyService::class),
             );
         });
 

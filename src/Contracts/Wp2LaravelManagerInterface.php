@@ -26,4 +26,7 @@ interface Wp2LaravelManagerInterface
     public function deleteTerm(int $termId, string $taxonomy);
     public function setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false);
     public function getPostTerms(int $postId, string $taxonomy);
+
+    public function getTaxonomy(string $taxonomy);
+    public function getTaxonomies(array $args = []);
 }

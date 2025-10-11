@@ -14,7 +14,7 @@ class DBTermRepository implements TermRepositoryInterface
     {
         $query = Term::query()->with('taxonomies');
 
-        if (!empty($args['taxonomy'])) {
+        if (array_key_exists('taxonomy', $args) && !empty($args['taxonomy'])) {
             $query->whereHas('taxonomies', function ($q) use ($args) {
                 $q->whereIn('taxonomy', (array)$args['taxonomy']);
             });

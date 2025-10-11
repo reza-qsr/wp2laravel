@@ -2,6 +2,7 @@
 
 namespace RezaQsr\Wp2Laravel\Repositories;
 
+use Illuminate\Support\Str;
 use RezaQsr\Wp2Laravel\Contracts\PostRepositoryInterface;
 use RezaQsr\Wp2Laravel\Models\Post;
 use RezaQsr\Wp2Laravel\Models\PostMeta;
@@ -13,6 +14,7 @@ class DbPostRepository implements PostRepositoryInterface
     {
         return Post::query()->find($id);
     }
+
     public function query(array $args = []): \Illuminate\Database\Eloquent\Collection
     {
         $q = Post::with(['metas', 'termTaxonomies']);
@@ -51,41 +53,51 @@ class DbPostRepository implements PostRepositoryInterface
 
     public function insert(array $data)
     {
+        $now = now();
+        $nowGmt = $now->clone()->setTimezone('UTC');
+
         $defaults = [
-            'post_author'        => 0,
-            'post_date'          => now(),
-            'post_date_gmt'      => now()->setTimezone('UTC'),
-            'post_content'       => '',
-            'post_title'         => '',
-            'post_excerpt'       => '',
-            'post_status'        => 'draft',
-            'comment_status'     => 'open',
-            'ping_status'        => 'open',
-            'post_password'      => '',
-            'post_name'          => '',
-            'to_ping'            => '',
-            'pinged'             => '',
-            'post_modified'      => now(),
-            'post_modified_gmt'  => now()->setTimezone('UTC'),
+            'post_author' => 0,
+            'post_date' => $now,
+            'post_date_gmt' => $nowGmt,
+            'post_content' => '',
+            'post_title' => '',
+            'post_excerpt' => '',
+            'post_status' => 'draft',
+            'comment_status' => 'open',
+            'ping_status' => 'open',
+            'post_password' => '',
+            'post_name' => '',
+            'to_ping' => '',
+            'pinged' => '',
+            'post_modified' => $now,
+            'post_modified_gmt' => $nowGmt,
             'post_content_filtered' => '',
-            'post_parent'        => 0,
-            'guid'               => '',
-            'menu_order'         => 0,
-            'post_type'          => 'post',
-            'post_mime_type'     => '',
-            'comment_count'      => 0,
+            'post_parent' => 0,
+            'guid' => '',
+            'menu_order' => 0,
+            'post_type' => 'post',
+            'post_mime_type' => '',
+            'comment_count' => 0,
         ];
+
 
         $postData = array_merge($defaults, $data);
 
+        if (empty($postData['post_name']) && !empty($postData['post_title'])) {
+            $postData['post_name'] = Str::slug($postData['post_title']);
+        }
+
         return Post::create($postData);
     }
+
     public function update(int $id, array $data): bool
     {
         $post = Post::find($id);
         if (!$post) return false;
         return $post->update($data);
     }
+
     public function delete(int $id): bool
     {
         PostMeta::where('post_id', $id)->delete();
@@ -103,12 +115,14 @@ class DbPostRepository implements PostRepositoryInterface
 
         return $this->maybeUnserialize($meta->meta_value);
     }
+
     public function hasMeta(int $postId, string $key): bool
     {
         return PostMeta::where('post_id', $postId)
             ->where('meta_key', $key)
             ->exists();
     }
+
     public function updateMeta(int $postId, string $key, $value): bool
     {
         $serialized = $this->maybeSerialize($value);
@@ -122,12 +136,13 @@ class DbPostRepository implements PostRepositoryInterface
             return $meta->save();
         }
 
-        return (bool) PostMeta::create([
+        return (bool)PostMeta::create([
             'post_id' => $postId,
             'meta_key' => $key,
             'meta_value' => $serialized,
         ]);
     }
+
     public function deleteMeta(int $postId, string $key): bool
     {
         return PostMeta::where('post_id', $postId)
@@ -140,8 +155,9 @@ class DbPostRepository implements PostRepositoryInterface
         if (is_array($value) || is_object($value)) {
             return serialize($value);
         }
-        return (string) $value;
+        return (string)$value;
     }
+
     protected function maybeUnserialize($value)
     {
         $maybe = @unserialize($value);
@@ -150,6 +166,7 @@ class DbPostRepository implements PostRepositoryInterface
         }
         return $maybe;
     }
+
     protected function applyMetaQuery($query, array $metaQuery): void
     {
         $relation = strtoupper($metaQuery['relation'] ?? 'AND');
@@ -165,10 +182,10 @@ class DbPostRepository implements PostRepositoryInterface
                     continue;
                 }
 
-                $key     = $clause['key']     ?? null;
-                $value   = $clause['value']   ?? null;
+                $key = $clause['key'] ?? null;
+                $value = $clause['value'] ?? null;
                 $compare = strtoupper($clause['compare'] ?? '=');
-                $type    = strtoupper($clause['type'] ?? 'CHAR');
+                $type = strtoupper($clause['type'] ?? 'CHAR');
 
                 $method = $relation === 'AND' ? 'whereHas' : 'orWhereHas';
 
@@ -236,9 +253,9 @@ class DbPostRepository implements PostRepositoryInterface
                 }
 
                 $taxonomy = $clause['taxonomy'] ?? null;
-                $terms    = (array)($clause['terms'] ?? []);
+                $terms = (array)($clause['terms'] ?? []);
                 $operator = strtoupper($clause['operator'] ?? 'IN');
-                $field    = strtolower($clause['field'] ?? 'id');
+                $field = strtolower($clause['field'] ?? 'id');
 
                 $column = match ($field) {
                     'slug' => 'slug',

@@ -94,7 +94,18 @@ class DbPostRepository implements PostRepositoryInterface
     public function update(int $id, array $data): bool
     {
         $post = Post::find($id);
-        if (!$post) return false;
+        if (!$post) {
+            return false;
+        }
+
+        $now = now();
+        $nowGmt = $now->clone()->setTimezone('UTC');
+
+        $data['post_modified'] = $data['post_modified'] ?? $now;
+        $data['post_modified_gmt'] = $data['post_modified_gmt'] ?? $nowGmt;
+        if (isset($data['post_title']) && empty($data['post_name'])) {
+            $data['post_name'] = Str::slug($data['post_title']);
+        }
         return $post->update($data);
     }
 

@@ -92,9 +92,7 @@ class DBTermRepository implements TermRepositoryInterface
             'count' => 0,
         ]);
 
-        return [
-            'term_id' => $termModel->term_id,
-            'term_taxonomy_id' => $taxonomyModel->term_taxonomy_id,
+        return (object) [
             'term' => $termModel,
             'taxonomy' => $taxonomyModel,
         ];
@@ -130,9 +128,7 @@ class DBTermRepository implements TermRepositoryInterface
             'parent' => $args['parent'] ?? $termTax->parent,
         ]);
 
-        return [
-            'term_id' => $term->term_id,
-            'term_taxonomy_id' => $termTax->term_taxonomy_id,
+        return (object) [
             'term' => $term,
             'taxonomy' => $termTax,
         ];

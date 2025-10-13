@@ -186,8 +186,6 @@ class DbPostRepository implements PostRepositoryInterface
 
         $query->where(function ($q) use ($clauses, $relation) {
             foreach ($clauses as $clause) {
-
-                // اگر تو در تو بود
                 if (isset($clause['relation'])) {
                     $this->applyMetaQuery($q, $clause);
                     continue;
@@ -205,7 +203,7 @@ class DbPostRepository implements PostRepositoryInterface
                         $meta->where('meta_key', $key);
                     }
 
-                    // پشتیبانی EXISTS و NOT EXISTS واقعی
+
                     if ($compare === 'EXISTS') {
                         $meta->whereNotNull('meta_value');
                         return;
@@ -257,7 +255,7 @@ class DbPostRepository implements PostRepositoryInterface
         $query->where(function ($q) use ($clauses, $relation) {
             foreach ($clauses as $clause) {
 
-                // پشتیبانی از تو در تو
+
                 if (isset($clause['relation'])) {
                     $this->applyTaxQuery($q, $clause);
                     continue;
@@ -298,7 +296,7 @@ class DbPostRepository implements PostRepositoryInterface
                     });
                 });
 
-                // EXISTS / NOT EXISTS در سطح taxonomy
+
                 if ($operator === 'EXISTS') {
                     $q->has('taxonomies');
                 }

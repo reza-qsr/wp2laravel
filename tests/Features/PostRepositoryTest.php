@@ -94,4 +94,40 @@ class PostRepositoryTest extends TestCase
         $this->assertTrue($deleted);
         $this->assertDatabaseMissing('wp_posts', ['ID' => $post->ID]);
     }
+
+    /** @test */
+    public function it_can_get_and_update_post_meta()
+    {
+        $data = [
+            'post_title' => 'Meta Post',
+            'post_type' => 'post',
+            'post_status' => 'publish'
+        ];
+        $post = $this->repo->insert($data);
+
+        $this->repo->updateMeta($post->ID, 'color', 'gold');
+        $metaValue = $this->repo->getMeta($post->ID, 'color');
+
+        $this->assertEquals('gold', $metaValue);
+        $this->assertTrue($this->repo->hasMeta($post->ID, 'color'));
+
+        $this->repo->updateMeta($post->ID, 'color', 'silver');
+        $metaValue = $this->repo->getMeta($post->ID, 'color');
+
+        $this->assertEquals('silver', $metaValue);
+    }
+
+    /** @test */
+    public function it_can_delete_post_meta()
+    {
+        $data = [
+            'post_title' => 'Meta Delete',
+            'post_type' => 'post',
+            'post_status' => 'publish'
+        ];
+        $post = $this->repo->insert($data);
+        $this->repo->updateMeta($post->ID, 'color', 'red');
+        $this->assertTrue($this->repo->deleteMeta($post->ID, 'color'));
+        $this->assertFalse($this->repo->hasMeta($post->ID, 'color'));
+    }
 }

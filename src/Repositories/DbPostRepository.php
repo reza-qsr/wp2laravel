@@ -17,7 +17,7 @@ class DbPostRepository implements PostRepositoryInterface
 
     public function query(array $args = []): \Illuminate\Database\Eloquent\Collection
     {
-        $q = Post::with(['metas', 'termTaxonomies']);
+        $q = Post::with(['meta', 'taxonomies']);
 
         if (!empty($args['post_type'])) {
             $q->where('post_type', $args['post_type']);
@@ -61,7 +61,7 @@ class DbPostRepository implements PostRepositoryInterface
             'post_date' => $now,
             'post_date_gmt' => $nowGmt,
             'post_content' => '',
-            'post_title' => '',
+            'post_title' => 'Draft',
             'post_excerpt' => '',
             'post_status' => 'draft',
             'comment_status' => 'open',

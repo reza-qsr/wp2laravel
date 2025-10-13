@@ -38,4 +38,60 @@ class PostRepositoryTest extends TestCase
         $this->assertEquals('product', $post->post_type);
         DB::Rollback();
     }
+
+    /** @test */
+    public function it_can_find_a_post_by_id()
+    {
+        DB::beginTransaction();
+        $data = [
+            'post_title' => 'Find Me',
+            'post_type' => 'post',
+            'post_status' => 'publish'
+        ];
+
+        $post = $this->repo->insert($data);
+        $found = $this->repo->find($post->ID);
+
+        $this->assertEquals($post->ID, $found->ID);
+        $this->assertEquals('Find Me', $found->post_title);
+        DB::Rollback();
+    }
+
+    /** @test */
+    public function it_can_update_a_post()
+    {
+        DB::beginTransaction();
+        $data = [
+            'post_title' => 'Old Title',
+            'post_type' => 'post',
+            'post_status' => 'draft'
+        ];
+        $post = $this->repo->insert($data);
+        $updated = $this->repo->update($post->ID, [
+            'post_title' => 'Updated Title',
+            'post_status' => 'publish',
+        ]);
+
+        $this->assertTrue($updated);
+
+        $post->refresh();
+        $this->assertEquals('Updated Title', $post->post_title);
+        $this->assertEquals('publish', $post->post_status);
+
+        DB::Rollback();
+    }
+    /** @test */
+    public function it_can_delete_a_post()
+    {
+        $data = [
+            'post_title' => 'Delete Me',
+            'post_type' => 'post',
+            'post_status' => 'publish'
+        ];
+        $post = $this->repo->insert($data);
+        $deleted = $this->repo->delete($post->ID);
+
+        $this->assertTrue($deleted);
+        $this->assertDatabaseMissing('wp_posts', ['ID' => $post->ID]);
+    }
 }

@@ -14,31 +14,6 @@ class DbUserRepository implements UserRepositoryInterface
     {
         return User::with('metas')->find($id);
     }
-
-    public function query(array $args = [])
-    {
-        $q = User::query();
-
-        if (!empty($args['include']) && is_array($args['include'])) {
-            $q->whereIn('ID', $args['include']);
-        }
-
-        if (!empty($args['exclude']) && is_array($args['exclude'])) {
-            $q->whereNotIn('ID', $args['exclude']);
-        }
-
-        if (!empty($args['search'])) {
-            $term = $args['search'];
-            $q->where(function ($query) use ($term) {
-                $query->where('user_login', 'LIKE', "%$term%")
-                    ->orWhere('user_email', 'LIKE', "%$term%")
-                    ->orWhere('display_name', 'LIKE', "%$term%");
-            });
-        }
-
-        return $q->with('metas')->get();
-    }
-
     public function insert(array $data)
     {
         $hasher = new PasswordHasher(8, true);
@@ -82,7 +57,6 @@ class DbUserRepository implements UserRepositoryInterface
 
         return $user;
     }
-
     public function update(int $id, array $data): bool
     {
         $user = User::find($id);
@@ -117,7 +91,6 @@ class DbUserRepository implements UserRepositoryInterface
 
         return true;
     }
-
     public function delete(int $id): bool
     {
         $user = User::find($id);
@@ -136,14 +109,12 @@ class DbUserRepository implements UserRepositoryInterface
 
         return $meta ? $this->maybeUnserialize($meta->meta_value) : $default;
     }
-
     public function hasMeta(int $userId, string $key): bool
     {
         return UserMeta::where('user_id', $userId)
             ->where('meta_key', $key)
             ->exists();
     }
-
     public function updateMeta(int $userId, string $key, $value): bool
     {
         $meta = UserMeta::updateOrCreate(
@@ -152,22 +123,11 @@ class DbUserRepository implements UserRepositoryInterface
         );
         return (bool)$meta;
     }
-
     public function deleteMeta(int $userId, string $key): bool
     {
         return UserMeta::where('user_id', $userId)
                 ->where('meta_key', $key)
                 ->delete() > 0;
-    }
-
-    public function findByEmail(string $email)
-    {
-        return User::where('user_email', $email)->first();
-    }
-
-    public function findByLogin(string $login)
-    {
-        return User::where('user_login', $login)->first();
     }
 
     public function getRoles(int $userId): array
@@ -184,7 +144,6 @@ class DbUserRepository implements UserRepositoryInterface
         }
         return (string)$value;
     }
-
     protected function maybeUnserialize($value)
     {
         $maybe = @unserialize($value);

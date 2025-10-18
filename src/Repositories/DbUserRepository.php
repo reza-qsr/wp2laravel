@@ -10,10 +10,6 @@ use RezaQsr\Wp2Laravel\Support\PasswordHasher;
 
 class DbUserRepository implements UserRepositoryInterface
 {
-    public function find(int $id)
-    {
-        return User::with('metas')->find($id);
-    }
     public function insert(array $data)
     {
         $hasher = new PasswordHasher(8, true);

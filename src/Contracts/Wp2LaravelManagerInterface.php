@@ -29,4 +29,14 @@ interface Wp2LaravelManagerInterface
 
     public function getTaxonomy(string $taxonomy);
     public function getTaxonomies(array $args = []);
+
+
+    public function insertUser(array $data);
+    public function updateUser(int $id, array $data): bool;
+    public function deleteUser(int $id): bool;
+    public function getUserMeta(int $userId, string $key, $default = null);
+    public function hasUserMeta(int $userId, string $key): bool;
+    public function updateUserMeta(int $userId, string $key, $value): bool;
+    public function deleteUserMeta(int $userId, string $key): bool;
+    public function getUserRoles(int $userId): array;
 }

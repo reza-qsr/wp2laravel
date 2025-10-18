@@ -7,6 +7,7 @@ use RezaQsr\Wp2Laravel\Services\OptionService;
 use RezaQsr\Wp2Laravel\Services\PostService;
 use RezaQsr\Wp2Laravel\Services\TaxonomyService;
 use RezaQsr\Wp2Laravel\Services\TermService;
+use RezaQsr\Wp2Laravel\Services\UserService;
 
 class Wp2LaravelManager implements Wp2LaravelManagerInterface
 {
@@ -15,13 +16,16 @@ class Wp2LaravelManager implements Wp2LaravelManagerInterface
     protected TermService $terms;
     protected TaxonomyService $taxonomies;
 
+    protected UserService $users;
 
-    public function __construct(OptionService $options, PostService $posts, TermService $terms , TaxonomyService $taxonomies)
+
+    public function __construct(OptionService $options, PostService $posts, TermService $terms , TaxonomyService $taxonomies , UserService $users)
     {
         $this->options = $options;
         $this->posts = $posts;
         $this->terms = $terms;
         $this->taxonomies = $taxonomies;
+        $this->users = $users;
     }
 
     public function getOption(string $key, $default = null)
@@ -115,5 +119,41 @@ class Wp2LaravelManager implements Wp2LaravelManagerInterface
     {
         return $this->taxonomies->getTaxonomies($args);
     }
+
+
+    public function insertUser(array $data)
+    {
+        return $this->users->insertUser($data);
+    }
+    public function updateUser(int $id, array $data): bool
+    {
+        return $this->users->updateUser($id, $data);
+    }
+    public function deleteUser(int $id): bool
+    {
+        return $this->users->deleteUser($id);
+    }
+
+    public function getUserMeta(int $userId, string $key, $default = null)
+    {
+        return $this->users->getUserMeta($userId, $key, $default);
+    }
+    public function hasUserMeta(int $userId, string $key): bool
+    {
+        return $this->users->hasUserMeta($userId, $key);
+    }
+    public function updateUserMeta(int $userId, string $key, $value): bool
+    {
+        return $this->users->updateUserMeta($userId, $key, $value);
+    }
+    public function deleteUserMeta(int $userId, string $key): bool
+    {
+        return $this->users->deleteUserMeta($userId, $key);
+    }
+    public function getUserRoles(int $userId): array
+    {
+        return $this->users->getUserRoles($userId);
+    }
+
 
 }

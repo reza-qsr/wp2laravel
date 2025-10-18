@@ -8,14 +8,17 @@ use RezaQsr\Wp2Laravel\Contracts\OptionRepositoryInterface;
 use RezaQsr\Wp2Laravel\Contracts\PostRepositoryInterface;
 use RezaQsr\Wp2Laravel\Contracts\TaxonomyRepositoryInterface;
 use RezaQsr\Wp2Laravel\Contracts\TermRepositoryInterface;
+use RezaQsr\Wp2Laravel\Contracts\UserRepositoryInterface;
 use RezaQsr\Wp2Laravel\Repositories\DbOptionRepository;
 use RezaQsr\Wp2Laravel\Repositories\DbPostRepository;
 use RezaQsr\Wp2Laravel\Repositories\DBTaxonomyRepository;
 use RezaQsr\Wp2Laravel\Repositories\DBTermRepository;
+use RezaQsr\Wp2Laravel\Repositories\DbUserRepository;
 use RezaQsr\Wp2Laravel\Services\OptionService;
 use RezaQsr\Wp2Laravel\Services\PostService;
 use RezaQsr\Wp2Laravel\Services\TaxonomyService;
 use RezaQsr\Wp2Laravel\Services\TermService;
+use RezaQsr\Wp2Laravel\Services\UserService;
 use RezaQsr\Wp2Laravel\Wp2LaravelManager;
 
 class Wp2LaravelServiceProvider extends ServiceProvider
@@ -43,6 +46,10 @@ class Wp2LaravelServiceProvider extends ServiceProvider
         $this->app->singleton(TaxonomyService::class, function($app) {
             return new TaxonomyService($app->make(TaxonomyRepositoryInterface::class));
         });
+        $this->app->bind(UserRepositoryInterface::class, DbUserRepository::class);
+        $this->app->singleton(UserService::class, function($app) {
+            return new TaxonomyService($app->make(UserRepositoryInterface::class));
+        });
 
         $this->app->singleton('wp2laravel', function($app) {
             return new Wp2LaravelManager(
@@ -50,6 +57,7 @@ class Wp2LaravelServiceProvider extends ServiceProvider
                 $app->make(PostService::class),
                 $app->make(TermService::class),
                 $app->make(TaxonomyService::class),
+                $app->make(UserService::class),
             );
         });
 

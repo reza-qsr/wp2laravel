@@ -14,6 +14,7 @@ class DbUserRepository implements UserRepositoryInterface
     {
         return User::with('metas')->find($id);
     }
+
     public function query(array $args = [])
     {
         $q = User::query();
@@ -37,13 +38,14 @@ class DbUserRepository implements UserRepositoryInterface
 
         return $q->with('metas')->get();
     }
+
     public function insert(array $data)
     {
         $hasher = new PasswordHasher(8, true);
 
         $userLogin = $data['user_login'] ?? null;
         $userEmail = $data['user_email'] ?? null;
-        $userPass  = $data['user_pass'] ?? null;
+        $userPass = $data['user_pass'] ?? null;
 
         if (empty($userLogin)) {
             throw new \InvalidArgumentException('user_login is required.');
@@ -61,12 +63,12 @@ class DbUserRepository implements UserRepositoryInterface
             'user_pass' => $userPass
                 ? $hasher->HashPassword($userPass)
                 : $hasher->HashPassword(str()->random(12)),
-            'user_nicename'    => $data['user_nicename'] ?? $userLogin,
-            'user_email'       => $userEmail ?? '',
-            'user_url'         => $data['user_url'] ?? '',
-            'user_registered'  => now(),
+            'user_nicename' => $data['user_nicename'] ?? $userLogin,
+            'user_email' => $userEmail ?? '',
+            'user_url' => $data['user_url'] ?? '',
+            'user_registered' => now(),
             'user_activation_key' => '',
-            'display_name'     => $data['display_name'] ?? $userLogin,
+            'display_name' => $data['display_name'] ?? $userLogin,
         ];
 
         $data = array_merge($defaults, $data);
@@ -80,13 +82,50 @@ class DbUserRepository implements UserRepositoryInterface
 
         return $user;
     }
+
     public function update(int $id, array $data): bool
     {
-        return User::where('ID', $id)->update($data) > 0;
+        $user = User::find($id);
+        if (!$user) {
+            return false;
+        }
+
+        $updateData = [];
+
+        $allowedFields = [
+            'user_login',
+            'user_email',
+            'display_name',
+            'user_nicename',
+            'user_url'
+        ];
+
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $updateData[$field] = $data[$field];
+            }
+        }
+
+        if (!empty($data['user_pass'])) {
+            $hasher = new PasswordHasher(8, true);
+            $updateData['user_pass'] = $hasher->HashPassword($data['user_pass']);
+        }
+
+        if (!empty($updateData)) {
+            $user->update($updateData);
+        }
+
+        return true;
     }
+
     public function delete(int $id): bool
     {
-        return User::where('ID', $id)->delete() > 0;
+        $user = User::find($id);
+        if (!$user) {
+            return false;
+        }
+        $user->metas()->delete();
+        return $user->delete() > 0;
     }
 
     public function getMeta(int $userId, string $key, $default = null)
@@ -95,22 +134,25 @@ class DbUserRepository implements UserRepositoryInterface
             ->where('meta_key', $key)
             ->first();
 
-        return $meta ? maybe_unserialize($meta->meta_value) : $default;
+        return $meta ? $this->maybeUnserialize($meta->meta_value) : $default;
     }
+
     public function hasMeta(int $userId, string $key): bool
     {
         return UserMeta::where('user_id', $userId)
             ->where('meta_key', $key)
             ->exists();
     }
+
     public function updateMeta(int $userId, string $key, $value): bool
     {
         $meta = UserMeta::updateOrCreate(
             ['user_id' => $userId, 'meta_key' => $key],
             ['meta_value' => $this->maybeSerialize($value)]
         );
-        return (bool) $meta;
+        return (bool)$meta;
     }
+
     public function deleteMeta(int $userId, string $key): bool
     {
         return UserMeta::where('user_id', $userId)
@@ -122,10 +164,12 @@ class DbUserRepository implements UserRepositoryInterface
     {
         return User::where('user_email', $email)->first();
     }
+
     public function findByLogin(string $login)
     {
         return User::where('user_login', $login)->first();
     }
+
     public function getRoles(int $userId): array
     {
         $caps = $this->getMeta($userId, 'wp_capabilities', []);

@@ -15,7 +15,6 @@ class Wp2LaravelManager implements Wp2LaravelManagerInterface
     protected PostService $posts;
     protected TermService $terms;
     protected TaxonomyService $taxonomies;
-
     protected UserService $users;
 
 

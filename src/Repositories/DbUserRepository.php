@@ -102,7 +102,6 @@ class DbUserRepository implements UserRepositoryInterface
         $meta = UserMeta::where('user_id', $userId)
             ->where('meta_key', $key)
             ->first();
-
         return $meta ? $this->maybeUnserialize($meta->meta_value) : $default;
     }
     public function hasMeta(int $userId, string $key): bool

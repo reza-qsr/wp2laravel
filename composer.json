@@ -8,7 +8,7 @@
       "RezaQsr\\Wp2Laravel\\": "src/"
     },
     "files": [
-      "src/helpers.php"
+
     ]
   },
   "autoload-dev": {

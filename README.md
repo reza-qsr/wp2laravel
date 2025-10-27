@@ -11,6 +11,7 @@
 
 - [Requirements](#Requirements)
 - [Installation](#installation)
+- [Usage](#usage)
 - [Docs](#docs)
     - [Options](#options)
     - [Posts](#posts)
@@ -39,6 +40,15 @@ Publish the configuration file:
 php artisan vendor:publish --tag=wp2laravel-config
 ```
 This will create `config/wp2laravel.php`, where you can specify the database connection name for your WordPress.
+
+---
+## Usage
+The package provides a facade Wp2Laravel for easy access to all methods.
+Import the facade at the top of your file:
+```
+use RezaQsr\Wp2Laravel\Facades\Wp2Laravel;
+```
+All methods are available through the facade or the manager instance.
 ---
 ## Docs
 

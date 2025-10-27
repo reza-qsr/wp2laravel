@@ -177,6 +177,178 @@ Wp2Laravel::updatePostMeta(1, 'custom_field', ['array' => 'value']);
 Wp2Laravel::deletePostMeta(1, 'custom_field');
 ```
 
+### Terms
+Manage WordPress terms (stored in wp_terms, wp_term_taxonomy, and wp_term_relationships tables).
+
+
+1. `getTerms(array $args = [])`: Retrieve terms with filters.
+
+**Supported $args keys:**
+- taxonomy: String or array (e.g., 'category').
+- slug: String or array.
+- search: String (search in name).
+
+```
+$terms = Wp2Laravel::getTerms(['taxonomy' => 'category', 'search' => 'news']);
+```
+
+
+2. `getTermBy(string $field, $value, string $taxonomy)`: Get term by field.
+
+**Supported $field:**
+- id 
+- slug
+- name
+- term_taxonomy_id
+```
+$term = Wp2Laravel::getTermBy('slug', 'news', 'category');
+```
+
+
+3. `insertTerm(string $term, string $taxonomy, array $args = [])`: Insert a new term.
+
+**Supported $args:**
+- slug
+- description
+- parent
+Returns object with 'term' and 'taxonomy' models.
+
+```
+$newTerm = Wp2Laravel::insertTerm('New Term', 'category', ['description' => 'Desc']);
+```
+
+
+4. `updateTerm(int $termId, string $taxonomy, array $args = [])`: Update a term.
+
+**Supported $args:**
+- name
+- slug
+- description
+- parent
+
+```
+Wp2Laravel::updateTerm(1, 'category', ['name' => 'Updated Term']);
+// Returns object with updated 'term' and 'taxonomy'.
+```
+
+
+5. `deleteTerm(int $termId, string $taxonomy): bool`: Delete a term (cleans up relationships if no other taxonomies use it).
+```
+Wp2Laravel::deleteTerm(1, 'category');
+```
+
+
+6. `setPostTerms(int $postId, array $terms, string $taxonomy, bool $append = false): bool`: Set terms for a post (term IDs). If $append is false, replaces existing terms.
+```
+Wp2Laravel::setPostTerms(1, [1, 2], 'category');
+```
+
+
+7. `getPostTerms(int $postId, string $taxonomy)`: Get terms attached to a post.
+```
+$terms = Wp2Laravel::getPostTerms(1, 'category');
+```
+
+## Taxonomies
+Manage WordPress taxonomies (stored in wp_term_taxonomy table).
+
+
+1. `getTaxonomy(string $taxonomy)`: Get details for a single taxonomy.
+
+```
+$tax = Wp2Laravel::getTaxonomy('category');
+// Returns object with 'name', 'description', 'parent', 'count', 'hierarchical'.
+```
+
+
+2. `getTaxonomies(array $args = [])`: Get multiple taxonomies.
+
+**Supported $args:** 
+- taxonomy (string or array to filter).
+
+```
+$taxonomies = Wp2Laravel::getTaxonomies(['taxonomy' => ['category', 'post_tag']]);
+// Returns associative array of taxonomy objects.
+```
+
+## Users
+Manage WordPress users (stored in wp_users table).
+
+
+1. `insertUser(array $data)`: Insert a new user. Hashes password automatically.
+
+**Required:** 
+- user_login
+
+**Supported $data:**
+- user_login
+- user_email
+- user_pass' (plain text)
+- user_nicename
+- user_url
+- display_name
+
+**Defaults:**
+- Subscriber role
+- user_level 0
+
+```
+$newUser = Wp2Laravel::insertUser([
+'user_login' => 'newuser',
+'user_email' => 'user@example.com',
+'user_pass' => 'password123',
+]);
+```
+
+2. `updateUser(int $id, array $data): bool`: Update a user.
+
+**Supported fields:** 
+- 'user_login',
+- 'user_email',
+- 'display_name',
+- 'user_nicename',
+- 'user_url',
+- 'user_pass' (plain text, will be hashed).
+```
+Wp2Laravel::updateUser(1, ['display_name' => 'Updated Name']);
+```
+
+3. `deleteUser(int $id): bool`: Delete a user (also deletes meta).
+```
+Wp2Laravel::deleteUser(1);
+```
+
+
+## User Meta
+Manage user meta (stored in the wp_usermeta table).
+
+
+1. getUserMeta(int $userId, string $key, $default = null): Get user meta value.
+```
+$meta = Wp2Laravel::getUserMeta(1, 'nickname');
+```
+
+
+2. `hasUserMeta(int $userId, string $key): bool`: Check if user meta exists.
+```
+if (Wp2Laravel::hasUserMeta(1, 'nickname')) { /* ... */ }
+```
+
+
+3. `updateUserMeta(int $userId, string $key, $value): bool`: Update or create user meta. Serializes if needed.
+```
+Wp2Laravel::updateUserMeta(1, 'nickname', 'Nick');
+```
+
+4. `deleteUserMeta(int $userId, string $key): bool`: Delete user meta by key.
+```
+Wp2Laravel::deleteUserMeta(1, 'nickname');
+```
+
+5. `getUserRoles(int $userId): array`: Get array of roles for a user (from 'wp_capabilities' meta).
+```
+$roles = Wp2Laravel::getUserRoles(1); // e.g., ['administrator']
+```
 
 ---
 ## Contributing

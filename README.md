@@ -49,6 +49,7 @@ Import the facade at the top of your file:
 use RezaQsr\Wp2Laravel\Facades\Wp2Laravel;
 ```
 All methods are available through the facade or the manager instance.
+
 ---
 ## Docs
 

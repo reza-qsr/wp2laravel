@@ -85,7 +85,8 @@ $post = Wp2Laravel::getPost(1);
 
 
 2. `getPosts(array $args = [])`: Retrieve multiple posts with query arguments. Supports WordPress-style filters.
-Supported $args keys:
+
+**Supported $args keys:**
 
 - post_type: String (e.g., 'post', 'page').
 - post_status: String (e.g., 'publish', 'draft').
@@ -116,7 +117,8 @@ $posts = Wp2Laravel::getPosts([
 ```
 
 3. `insertPost(array $data)`: Insert a new post. Returns the created Eloquent model.
-Supported $data keys (with defaults):
+
+**Supported $data keys (with defaults):**
 
 - post_author: 0
 - post_date: Current timestamp
@@ -222,10 +224,11 @@ $term = Wp2Laravel::getTermBy('slug', 'news', 'category');
 - slug
 - description
 - parent
-Returns object with 'term' and 'taxonomy' models.
+
 
 ```
 $newTerm = Wp2Laravel::insertTerm('New Term', 'category', ['description' => 'Desc']);
+// Returns object with 'term' and 'taxonomy' models.
 ```
 
 
@@ -268,7 +271,7 @@ Manage WordPress taxonomies (stored in wp_term_taxonomy table).
 
 ```
 $tax = Wp2Laravel::getTaxonomy('category');
-// Returns object with 'name', 'description', 'parent', 'count', 'hierarchical'.
+// Returns object with 'name', 'description', 'parent', 'count'.
 ```
 
 
@@ -294,7 +297,7 @@ Manage WordPress users (stored in wp_users table).
 **Supported $data:**
 - user_login
 - user_email
-- user_pass' (plain text)
+- user_pass' (plain text, will be hashed).
 - user_nicename
 - user_url
 - display_name

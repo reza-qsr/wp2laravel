@@ -14,7 +14,7 @@ class TermRelationship extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('wp2laravel.term_relationships_table', 'wp_term_relationships');
+        $this->table = config('wp2laravel.tables.term_relationships_table', 'wp_term_relationships');
     }
 
     public function post(): \Illuminate\Database\Eloquent\Relations\BelongsTo

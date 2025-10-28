@@ -18,7 +18,7 @@ class User extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('wp2laravel.users_table', 'wp_users');
+        $this->table = config('wp2laravel.tables.users_table', 'wp_users');
     }
     public function metas(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

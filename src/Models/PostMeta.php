@@ -20,7 +20,7 @@ class PostMeta extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('wp2laravel.postmeta_table', 'wp_postmeta');
+        $this->table = config('wp2laravel.tables.postmeta_table', 'wp_postmeta');
     }
 
     public function post()

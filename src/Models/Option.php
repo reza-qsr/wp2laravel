@@ -14,6 +14,6 @@ class Option extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('wp2laravel.options_table', 'wp_options');
+        $this->table = config('wp2laravel.tables.options_table', 'wp_options');
     }
 }

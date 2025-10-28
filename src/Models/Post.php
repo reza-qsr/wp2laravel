@@ -16,7 +16,7 @@ class Post extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('wp2laravel.posts_table', 'wp_posts');
+        $this->table = config('wp2laravel.tables.posts_table', 'wp_posts');
     }
 
     protected static function booted(): void
@@ -42,7 +42,7 @@ class Post extends Model
     {
         return $this->belongsToMany(
             TermTaxonomy::class,
-            config('wp2laravel.term_relationships_table', 'wp_term_relationships'),
+            config('wp2laravel.tables.term_relationships_table', 'wp_term_relationships'),
             'object_id',
             'term_taxonomy_id'
         );

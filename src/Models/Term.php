@@ -15,7 +15,7 @@ class Term extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('wp2laravel.terms_table', 'wp_terms');
+        $this->table = config('wp2laravel.tables.terms_table', 'wp_terms');
     }
 
     public function taxonomies(): \Illuminate\Database\Eloquent\Relations\HasMany

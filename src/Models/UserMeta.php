@@ -14,6 +14,6 @@ class UserMeta extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('wp2laravel.usermeta_table', 'wp_usermeta');
+        $this->table = config('wp2laravel.tables.usermeta_table', 'wp_usermeta');
     }
 }

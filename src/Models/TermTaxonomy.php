@@ -27,7 +27,7 @@ class TermTaxonomy extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('wp2laravel.term_taxonomy_table', 'wp_term_taxonomy');
+        $this->table = config('wp2laravel.tables.term_taxonomy_table', 'wp_term_taxonomy');
     }
 
     public function term(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -42,7 +42,7 @@ class TermTaxonomy extends Model
     {
         return $this->belongsToMany(
             Post::class,
-            config('wp2laravel.term_relationships_table', 'wp_term_relationships'),
+            config('wp2laravel.tables.term_relationships_table', 'wp_term_relationships'),
             'term_taxonomy_id',
             'object_id');
     }

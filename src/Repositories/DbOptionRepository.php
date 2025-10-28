@@ -4,6 +4,7 @@ namespace RezaQsr\Wp2Laravel\Repositories;
 
 use RezaQsr\Wp2Laravel\Contracts\OptionRepositoryInterface;
 use RezaQsr\Wp2Laravel\Models\Option;
+use RezaQsr\Wp2Laravel\Support\Sanitizer;
 
 class DbOptionRepository implements OptionRepositoryInterface
 {
@@ -19,6 +20,7 @@ class DbOptionRepository implements OptionRepositoryInterface
 
     public function set(string $key, $value): bool
     {
+        $value = Sanitizer::value($value);
         $option = Option::where('option_name', $key)->first();
 
         $serializedValue = $this->maybeSerialize($value);
@@ -42,6 +44,7 @@ class DbOptionRepository implements OptionRepositoryInterface
 
     public function add(string $key, $value, string $autoload = 'yes'): bool
     {
+        $value = Sanitizer::value($value);
         $exists = Option::where('option_name', $key)->exists();
         if ($exists) return false;
 

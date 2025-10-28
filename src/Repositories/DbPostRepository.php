@@ -2,11 +2,11 @@
 
 namespace RezaQsr\Wp2Laravel\Repositories;
 
-use Illuminate\Support\Str;
 use RezaQsr\Wp2Laravel\Contracts\PostRepositoryInterface;
 use RezaQsr\Wp2Laravel\Models\Post;
 use RezaQsr\Wp2Laravel\Models\PostMeta;
 use RezaQsr\Wp2Laravel\Models\TermRelationship;
+use RezaQsr\Wp2Laravel\Support\Sanitizer;
 
 class DbPostRepository implements PostRepositoryInterface
 {
@@ -84,8 +84,14 @@ class DbPostRepository implements PostRepositoryInterface
 
         $postData = array_merge($defaults, $data);
 
+
+        if (isset($postData['post_title'])) {
+            $postData['post_title'] = Sanitizer::text($postData['post_title']);
+        }
         if (empty($postData['post_name']) && !empty($postData['post_title'])) {
-            $postData['post_name'] = Str::slug($postData['post_title']);
+            $postData['post_name'] = Sanitizer::slug($postData['post_title']);
+        } else if (isset($postData['post_name'])) {
+            $postData['post_name'] = Sanitizer::slug($postData['post_name']);
         }
 
         return Post::create($postData);
@@ -103,8 +109,13 @@ class DbPostRepository implements PostRepositoryInterface
 
         $data['post_modified'] = $data['post_modified'] ?? $now;
         $data['post_modified_gmt'] = $data['post_modified_gmt'] ?? $nowGmt;
+        if (isset($data['post_title'])) {
+            $data['post_title'] = Sanitizer::text($data['post_title']);
+        }
         if (isset($data['post_title']) && empty($data['post_name'])) {
-            $data['post_name'] = Str::slug($data['post_title']);
+            $data['post_name'] = Sanitizer::slug($data['post_title']);
+        } else if (isset($data['post_name'])) {
+            $data['post_name'] = Sanitizer::slug($data['post_name']);
         }
         return $post->update($data);
     }
@@ -136,6 +147,7 @@ class DbPostRepository implements PostRepositoryInterface
 
     public function updateMeta(int $postId, string $key, $value): bool
     {
+        $value = Sanitizer::value($value);
         $serialized = $this->maybeSerialize($value);
 
         $meta = PostMeta::where('post_id', $postId)

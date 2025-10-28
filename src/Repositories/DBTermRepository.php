@@ -6,7 +6,7 @@ use RezaQsr\Wp2Laravel\Contracts\TermRepositoryInterface;
 use RezaQsr\Wp2Laravel\Models\Term;
 use RezaQsr\Wp2Laravel\Models\TermTaxonomy;
 use RezaQsr\Wp2Laravel\Models\TermRelationship;
-use Illuminate\Support\Str;
+use RezaQsr\Wp2Laravel\Support\Sanitizer;
 
 class DBTermRepository implements TermRepositoryInterface
 {
@@ -67,9 +67,9 @@ class DBTermRepository implements TermRepositoryInterface
 
     public function insert(string $term, string $taxonomy, array $args = [])
     {
-        $name = trim($term);
-        $slug = isset($args['slug']) ? Str::slug($args['slug']) : Str::slug($name);
-        $description = $args['description'] ?? '';
+        $name = Sanitizer::text(trim($term));
+        $slug = isset($args['slug']) ? Sanitizer::slug($args['slug']) : Sanitizer::slug($name);
+        $description = isset($args['description']) ? Sanitizer::text($args['description']) : '';
         $parent = $args['parent'] ?? 0;
 
         $baseSlug = $slug;
@@ -106,11 +106,11 @@ class DBTermRepository implements TermRepositoryInterface
             ->firstOrFail();
 
         if (isset($args['name'])) {
-            $term->name = trim($args['name']);
+            $term->name = Sanitizer::text(trim($args['name']));
         }
 
         if (array_key_exists('slug', $args)) {
-            $newSlug = Str::slug($args['slug'] ?: $term->name);
+            $newSlug = Sanitizer::slug($args['slug'] ?: $term->name);
             $baseSlug = $newSlug;
             $i = 2;
             while (Term::where('slug', $newSlug)->where('term_id', '!=', $termId)->exists()) {
@@ -124,7 +124,7 @@ class DBTermRepository implements TermRepositoryInterface
         $term->save();
 
         $termTax->update([
-            'description' => $args['description'] ?? $termTax->description,
+            'description' => isset($args['description']) ? Sanitizer::text($args['description']) : $termTax->description,
             'parent' => $args['parent'] ?? $termTax->parent,
         ]);
 

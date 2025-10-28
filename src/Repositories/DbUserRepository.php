@@ -6,6 +6,7 @@ use RezaQsr\Wp2Laravel\Contracts\UserRepositoryInterface;
 use RezaQsr\Wp2Laravel\Models\User;
 use RezaQsr\Wp2Laravel\Models\UserMeta;
 use RezaQsr\Wp2Laravel\Support\PasswordHasher;
+use RezaQsr\Wp2Laravel\Support\Sanitizer;
 
 class DbUserRepository implements UserRepositoryInterface
 {
@@ -13,8 +14,8 @@ class DbUserRepository implements UserRepositoryInterface
     {
         $hasher = new PasswordHasher(8, true);
 
-        $userLogin = $data['user_login'] ?? null;
-        $userEmail = $data['user_email'] ?? null;
+        $userLogin = isset($data['user_login']) ? Sanitizer::text($data['user_login']) : null;
+        $userEmail = isset($data['user_email']) ? Sanitizer::email($data['user_email']) : null;
         $userPass = $data['user_pass'] ?? null;
 
         if (empty($userLogin)) {
@@ -33,12 +34,12 @@ class DbUserRepository implements UserRepositoryInterface
             'user_pass' => $userPass
                 ? $hasher->HashPassword($userPass)
                 : $hasher->HashPassword(str()->random(12)),
-            'user_nicename' => $data['user_nicename'] ?? $userLogin,
+            'user_nicename' => isset($data['user_nicename']) ? Sanitizer::text($data['user_nicename']) : $userLogin,
             'user_email' => $userEmail ?? '',
-            'user_url' => $data['user_url'] ?? '',
+            'user_url' => isset($data['user_url']) ? Sanitizer::text($data['user_url']) : '',
             'user_registered' => now(),
             'user_activation_key' => '',
-            'display_name' => $data['display_name'] ?? $userLogin,
+            'display_name' => isset($data['display_name']) ? Sanitizer::text($data['display_name']) : $userLogin,
         ];
 
         $data = array_merge($defaults, $data);
@@ -68,7 +69,6 @@ class DbUserRepository implements UserRepositoryInterface
             'user_nicename',
             'user_url'
         ];
-
         foreach ($allowedFields as $field) {
             if (array_key_exists($field, $data)) {
                 $updateData[$field] = $data[$field];
@@ -111,6 +111,7 @@ class DbUserRepository implements UserRepositoryInterface
     }
     public function updateMeta(int $userId, string $key, $value): bool
     {
+        $value = Sanitizer::value($value);
         $meta = UserMeta::updateOrCreate(
             ['user_id' => $userId, 'meta_key' => $key],
             ['meta_value' => $this->maybeSerialize($value)]

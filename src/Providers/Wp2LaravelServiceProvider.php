@@ -48,7 +48,7 @@ class Wp2LaravelServiceProvider extends ServiceProvider
         });
         $this->app->bind(UserRepositoryInterface::class, DbUserRepository::class);
         $this->app->singleton(UserService::class, function($app) {
-            return new TaxonomyService($app->make(UserRepositoryInterface::class));
+            return new UserService($app->make(UserRepositoryInterface::class));
         });
 
         $this->app->singleton('wp2laravel', function($app) {

@@ -2,7 +2,6 @@
 
 namespace RezaQsr\Wp2Laravel\Repositories;
 
-use Illuminate\Support\Str;
 use RezaQsr\Wp2Laravel\Contracts\UserRepositoryInterface;
 use RezaQsr\Wp2Laravel\Models\User;
 use RezaQsr\Wp2Laravel\Models\UserMeta;

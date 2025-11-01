@@ -48,7 +48,7 @@ class DbPostRepository implements PostRepositoryInterface
         }
 
 
-        return $q->get();
+        return $q->with('meta')->get();
     }
 
     public function insert(array $data)

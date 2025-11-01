@@ -4,7 +4,7 @@
 
 > ⚠️ **Important — Testing / Beta**  
 > This package is **currently in testing mode**. It may contain bugs or breaking changes. **Always make a full backup of your WordPress database** or operate on a cloned copy before using in production.
-
+If you found a bug in the package, please report it in the Issues section to fix.
 ---
 
 ## Table of contents
@@ -26,7 +26,7 @@
 
 ## Requirements
 - PHP >= 8.2
-- Laravel >= 11.0
+- Laravel >= 12.0
 
 ---
 ## Installation

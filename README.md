@@ -31,20 +31,20 @@ If you found a bug in the package, please report it in the Issues section to fix
 ---
 ## Installation
 
-Install the package via Composer:
+Install the package via Composer :
 ```
 composer require rezaqsr/wp2laravel
 ```
-Publish the configuration file:
+Publish the configuration file :
 ```
 php artisan vendor:publish --tag=wp2laravel-config
 ```
 This will create `config/wp2laravel.php`, where you can specify the database connection name for your WordPress.
-
+in case tables have different prefix.
 ---
 ## Usage
 The package provides a facade Wp2Laravel for easy access to all methods.
-Import the facade at the top of your file:
+Import the facade at the top of your file :
 ```
 use RezaQsr\Wp2Laravel\Facades\Wp2Laravel;
 ```

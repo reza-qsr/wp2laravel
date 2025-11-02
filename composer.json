@@ -3,6 +3,9 @@
   "description": "A Laravel package that provides WordPress-like functions and utilities to simplify migrating or adapting WordPress projects to Laravel.",
   "type": "library",
   "license": "MIT",
+  "require": {
+    "php": "^8.2"
+  },
   "autoload": {
     "psr-4": {
       "RezaQsr\\Wp2Laravel\\": "src/"

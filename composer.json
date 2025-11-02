@@ -1,6 +1,6 @@
 {
   "name": "rezaqsr/wp2laravel",
-  "description": "WordPress helper functions and utilities for Laravel (wp2laravel).",
+  "description": "interact with WordPress database tables (such as options, posts, terms, taxonomies, and users) using familiar WordPress-inspired methods, while leveraging Laravel's Eloquent ORM and dependency injection",
   "type": "library",
   "license": "MIT",
   "autoload": {

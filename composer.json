@@ -1,6 +1,6 @@
 {
   "name": "reza_qsr/wp2laravel",
-  "description": "interact with WordPress database tables (such as options, posts, terms, taxonomies, and users) using familiar WordPress-inspired methods, while leveraging Laravel's Eloquent ORM and dependency injection",
+  "description": "A Laravel package that provides WordPress-like functions and utilities to simplify migrating or adapting WordPress projects to Laravel.",
   "type": "library",
   "license": "MIT",
   "autoload": {

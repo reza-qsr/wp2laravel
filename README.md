@@ -33,7 +33,7 @@ If you found a bug in the package, please report it in the Issues section to fix
 
 Install the package via Composer :
 ```
-composer require rezaqsr/wp2laravel
+composer require reza_qsr/wp2laravel
 ```
 Publish the configuration file :
 ```
